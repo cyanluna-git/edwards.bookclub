@@ -87,6 +87,13 @@ Notes:
 - `BOOK_REQUESTS_CSV` and `ATTENDANCE_CSV` should point to SharePoint export CSV files.
 - Re-running the task is designed to update existing imported rows instead of duplicating them.
 
+Generate a reconciliation report against the PBIX baseline:
+
+```bash
+source script/dev-env.sh
+bundle exec bin/rake bookclub:reconcile
+```
+
 ## Current migration direction
 
 - Application stack: Rails

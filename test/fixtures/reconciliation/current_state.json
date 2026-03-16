@@ -1,0 +1,12 @@
+{
+  "statistics": [
+    { "TableName": "Members", "ColumnName": "ID", "Cardinality": 2 },
+    { "TableName": "도서신청", "ColumnName": "ID", "Cardinality": 10 },
+    { "TableName": "출석!", "ColumnName": "ID", "Cardinality": 8 }
+  ],
+  "measures": [
+    { "Name": "MembersPoint", "Expression": "5000" },
+    { "Name": "LeadersPoint", "Expression": "10000" },
+    { "Name": "SumOfBooks", "Expression": "CALCULATE(SUM('도서신청'[금액]),'도서신청'[신청일] > DATE(2026,1,1))" }
+  ]
+}
