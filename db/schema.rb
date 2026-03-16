@@ -10,5 +10,123 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 0) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
+  create_table "book_requests", force: :cascade do |t|
+    t.decimal "additional_payment", precision: 12, scale: 2
+    t.string "author"
+    t.text "comment"
+    t.string "cover_url"
+    t.datetime "created_at", null: false
+    t.integer "fiscal_period_id"
+    t.string "link_url"
+    t.integer "member_id"
+    t.decimal "price", precision: 12, scale: 2
+    t.string "publisher"
+    t.string "rating"
+    t.string "request_status"
+    t.date "requested_on"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["fiscal_period_id"], name: "index_book_requests_on_fiscal_period_id"
+    t.index ["member_id"], name: "index_book_requests_on_member_id"
+    t.index ["request_status"], name: "index_book_requests_on_request_status"
+    t.index ["requested_on"], name: "index_book_requests_on_requested_on"
+  end
+
+  create_table "fiscal_periods", force: :cascade do |t|
+    t.boolean "active", default: false, null: false
+    t.datetime "created_at", null: false
+    t.date "end_date", null: false
+    t.string "name", null: false
+    t.date "start_date", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "meeting_attendances", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "meeting_id", null: false
+    t.integer "member_id", null: false
+    t.text "note"
+    t.boolean "reserve_exempt", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["meeting_id", "member_id"], name: "index_meeting_attendances_on_meeting_id_and_member_id", unique: true
+    t.index ["meeting_id"], name: "index_meeting_attendances_on_meeting_id"
+    t.index ["member_id"], name: "index_meeting_attendances_on_member_id"
+  end
+
+  create_table "meeting_photos", force: :cascade do |t|
+    t.string "caption"
+    t.datetime "created_at", null: false
+    t.string "file_path"
+    t.integer "meeting_id", null: false
+    t.integer "sort_order", default: 0, null: false
+    t.string "source_url"
+    t.datetime "updated_at", null: false
+    t.index ["meeting_id"], name: "index_meeting_photos_on_meeting_id"
+  end
+
+  create_table "meetings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.text "description"
+    t.integer "fiscal_period_id"
+    t.string "legacy_title"
+    t.string "location"
+    t.datetime "meeting_at", null: false
+    t.boolean "reserve_exempt_default", default: false, null: false
+    t.text "review"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_meetings_on_created_by_id"
+    t.index ["fiscal_period_id"], name: "index_meetings_on_fiscal_period_id"
+    t.index ["location"], name: "index_meetings_on_location"
+    t.index ["meeting_at"], name: "index_meetings_on_meeting_at"
+  end
+
+  create_table "members", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.text "bio"
+    t.datetime "created_at", null: false
+    t.string "department"
+    t.string "email"
+    t.string "english_name", null: false
+    t.date "joined_on"
+    t.string "korean_name"
+    t.string "location"
+    t.string "member_role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_members_on_email", unique: true
+    t.index ["location"], name: "index_members_on_location"
+    t.index ["member_role"], name: "index_members_on_member_role"
+  end
+
+  create_table "reserve_policies", force: :cascade do |t|
+    t.integer "attendance_points", null: false
+    t.datetime "created_at", null: false
+    t.date "effective_from", null: false
+    t.date "effective_to"
+    t.string "member_role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_role", "effective_from"], name: "index_reserve_policies_on_member_role_and_effective_from", unique: true
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.integer "member_id"
+    t.string "password_digest"
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["member_id"], name: "index_users_on_member_id"
+  end
+
+  add_foreign_key "book_requests", "fiscal_periods", on_delete: :nullify
+  add_foreign_key "book_requests", "members", on_delete: :nullify
+  add_foreign_key "meeting_attendances", "meetings", on_delete: :cascade
+  add_foreign_key "meeting_attendances", "members", on_delete: :cascade
+  add_foreign_key "meeting_photos", "meetings", on_delete: :cascade
+  add_foreign_key "meetings", "fiscal_periods", on_delete: :nullify
+  add_foreign_key "meetings", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "users", "members", on_delete: :nullify
 end
