@@ -7,15 +7,19 @@ class AdminDashboardFlowTest < ActionDispatch::IntegrationTest
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     @member = Member.create!(english_name: "Hannah Lee", member_role: "정회원", active: true)
     @leader = Member.create!(english_name: "Gerald Park", member_role: "Lead", active: true)
+    @guest = Member.create!(english_name: "Blake Jung", member_role: "정회원", active: true)
     ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)
     ReservePolicy.create!(member_role: "Lead", attendance_points: 10000, effective_from: @period.start_date, effective_to: @period.end_date)
 
+    february_meeting = Meeting.create!(title: "February Meetup", meeting_at: Time.zone.parse("2026-02-09 19:00"), location: "아산", fiscal_period: @period)
     march_meeting = Meeting.create!(title: "March Meetup", meeting_at: Time.zone.parse("2026-03-12 19:00"), location: "천안", fiscal_period: @period, review: "Good energy")
-    april_meeting = Meeting.create!(title: "April Meetup", meeting_at: Time.zone.parse("2026-04-09 19:00"), location: "아산", fiscal_period: @period)
+    march_follow_up = Meeting.create!(title: "March Follow-up", meeting_at: Time.zone.parse("2026-03-24 19:00"), location: "동탄", fiscal_period: @period, review: "Readers actually finished the review memo this time.")
+    MeetingAttendance.create!(meeting: february_meeting, member: @guest, reserve_exempt: false)
     MeetingAttendance.create!(meeting: march_meeting, member: @member, reserve_exempt: false)
     MeetingAttendance.create!(meeting: march_meeting, member: @leader, reserve_exempt: false)
-    MeetingAttendance.create!(meeting: april_meeting, member: @member, reserve_exempt: false)
+    MeetingAttendance.create!(meeting: march_follow_up, member: @guest, reserve_exempt: false)
     MeetingPhoto.create!(meeting: march_meeting, source_url: "https://example.com/march.jpg", caption: "March", sort_order: 1)
+    MeetingPhoto.create!(meeting: march_follow_up, source_url: "https://example.com/march-2.jpg", caption: "March 2", sort_order: 1)
 
     BookRequest.create!(member: @member, fiscal_period: @period, title: "Thinking in Systems", price: 18000, additional_payment: 3000, requested_on: Date.new(2026, 3, 1))
 
@@ -29,21 +33,26 @@ class AdminDashboardFlowTest < ActionDispatch::IntegrationTest
     get admin_dashboard_path
 
     assert_response :success
-    assert_match "Operating dashboard", response.body
-    assert_match "KRW 5,000", response.body
-    assert_match "천안", response.body
+    assert_match "Book club reporting room", response.body
+    assert_match "Reserve leaderboard", response.body
+    assert_match "Meeting reviews", response.body
     assert_match "March Meetup", response.body
+    assert_match "March Follow-up", response.body
+    assert_match "천안", response.body
+    assert_match "Readers actually finished the review memo this time.", response.body
+    assert_match "\u20a95,000", response.body
   end
 
   test "dashboard can be filtered by month" do
     sign_in_as(@admin)
 
-    get admin_dashboard_path, params: { month: "2026-04", fiscal_period_id: @period.id }
+    get admin_dashboard_path, params: { month: "2026-02", fiscal_period_id: @period.id }
 
     assert_response :success
-    assert_match "April Meetup", response.body
+    assert_match "February Meetup", response.body
     assert_no_match "March Meetup", response.body
-    assert_match "April 2026", response.body
+    assert_no_match "March Follow-up", response.body
+    assert_match "2026-02", response.body
   end
 
   test "member users cannot access dashboard" do

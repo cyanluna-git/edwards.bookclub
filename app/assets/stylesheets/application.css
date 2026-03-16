@@ -443,6 +443,269 @@ textarea {
   background: linear-gradient(90deg, var(--accent), #d08b53);
 }
 
+.bar-fill.tone-dongtan,
+.attendance-month-segment.tone-dongtan,
+.legend-swatch.tone-dongtan,
+.location-pill.tone-dongtan,
+.location-metric.tone-dongtan {
+  background: #62a8f3;
+}
+
+.bar-fill.tone-bundang,
+.attendance-month-segment.tone-bundang,
+.legend-swatch.tone-bundang,
+.location-pill.tone-bundang,
+.location-metric.tone-bundang {
+  background: #2f52c7;
+}
+
+.bar-fill.tone-asan,
+.attendance-month-segment.tone-asan,
+.legend-swatch.tone-asan,
+.location-pill.tone-asan,
+.location-metric.tone-asan {
+  background: #a8d66d;
+}
+
+.bar-fill.tone-cheonan,
+.attendance-month-segment.tone-cheonan,
+.legend-swatch.tone-cheonan,
+.location-pill.tone-cheonan,
+.location-metric.tone-cheonan {
+  background: #f0d36a;
+}
+
+.bar-fill.tone-neutral,
+.attendance-month-segment.tone-neutral,
+.legend-swatch.tone-neutral,
+.location-pill.tone-neutral,
+.location-metric.tone-neutral {
+  background: #d0c2ab;
+}
+
+.dashboard-hero {
+  padding-bottom: 0.5rem;
+}
+
+.dashboard-filter-panel {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-metrics {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.dashboard-report-grid,
+.attendance-summary-grid,
+.register-grid,
+.reserve-grid {
+  grid-template-columns: 1fr;
+}
+
+.report-panel {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.section-title.compact {
+  align-items: center;
+}
+
+.report-table-wrap {
+  overflow-x: auto;
+}
+
+.report-table th {
+  white-space: nowrap;
+}
+
+.report-table td {
+  min-width: 120px;
+}
+
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.attendance-leaderboard .bar-track {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  height: auto;
+  min-height: 18px;
+  padding-right: 0.35rem;
+}
+
+.attendance-track .bar-fill {
+  min-height: 18px;
+}
+
+.attendance-track strong {
+  font-size: 0.95rem;
+}
+
+.location-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.inline-metrics {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.location-metric {
+  color: var(--ink);
+}
+
+.attendance-trend-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: 0.85rem;
+  align-items: end;
+  min-height: 260px;
+}
+
+.attendance-month {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+
+.attendance-month-bar {
+  width: 100%;
+  max-width: 58px;
+  height: 210px;
+  padding: 0.35rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(216, 200, 177, 0.9);
+  display: flex;
+  align-items: end;
+}
+
+.attendance-month-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 8px;
+}
+
+.attendance-month-segment {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding-top: 0.2rem;
+}
+
+.attendance-month-label {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--ink-soft);
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.meeting-report-table td {
+  vertical-align: top;
+}
+
+.attendee-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.photo-wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.photo-card {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.photo-card img {
+  width: 100%;
+  aspect-ratio: 1 / 0.86;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 1px solid rgba(216, 200, 177, 0.9);
+}
+
+.photo-card figcaption {
+  display: grid;
+  gap: 0.2rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.review-card {
+  padding: 1.2rem;
+  border-radius: 20px;
+  border: 1px solid rgba(216, 200, 177, 0.9);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.review-card p {
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  .reserve-grid {
+    grid-template-columns: 0.92fr 1.28fr;
+  }
+
+  .attendance-summary-grid {
+    grid-template-columns: 1.35fr 0.65fr;
+  }
+
+  .register-grid {
+    grid-template-columns: 0.95fr 1.05fr;
+  }
+}
+
 @media (max-width: 780px) {
   .detail-grid {
     grid-template-columns: 1fr;
@@ -451,5 +714,10 @@ textarea {
   .topbar-inner {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .attendance-month-label {
+    writing-mode: initial;
+    transform: none;
   }
 }

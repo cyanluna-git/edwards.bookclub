@@ -17,7 +17,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_dashboard_path
     follow_redirect!
     assert_response :success
-    assert_match "Operating dashboard", response.body
+    assert_match "Book club reporting room", response.body
 
     delete destroy_session_path
 

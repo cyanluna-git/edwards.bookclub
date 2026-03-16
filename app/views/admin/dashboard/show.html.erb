@@ -1,16 +1,16 @@
-<section class="hero">
+<section class="hero dashboard-hero">
   <p class="eyebrow">Admin Dashboard</p>
-  <h1>Operating dashboard</h1>
+  <h1>Book club reporting room</h1>
   <p class="hero-copy">
-    Reserve balances, attendance trends, location distribution, and recent meeting activity from the application data model.
+    PBIX-style reserve standings, month-by-month attendance, meeting photos, and readable review notes from the Rails data model.
   </p>
 </section>
 
-<section class="panel stack">
+<section class="panel stack dashboard-filter-panel">
   <div class="section-title">
     <div>
-      <h2>Filters</h2>
-      <p class="muted">Use fiscal period and month filters to switch between full-period and month-specific views.</p>
+      <h2>Report scope</h2>
+      <p class="muted">Reserve figures stay fiscal-period scoped. Attendance records, photos, and reviews follow the selected month.</p>
     </div>
     <div class="button-row">
       <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
@@ -27,7 +27,7 @@
         <%= form.select :fiscal_period_id, options_for_select([["Active/default", ""]] + @fiscal_period_options.map { |period| [period.name, period.id] }, @filters[:fiscal_period_id]) %>
       </div>
       <div class="field">
-        <%= form.label :month, "Month" %>
+        <%= form.label :month, "Attendance month" %>
         <%= form.month_field :month, value: @filters[:month] %>
       </div>
     </div>
@@ -38,109 +38,294 @@
   <% end %>
 </section>
 
-<section class="metrics">
+<section class="metrics dashboard-metrics">
   <article class="metric-card">
     <span class="muted">Fiscal period</span>
     <strong><%= @dashboard.fiscal_period&.name || "None" %></strong>
   </article>
   <article class="metric-card">
     <span class="muted">Reserve balance</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.balance, unit: "₩", precision: 0) %></strong>
   </article>
   <article class="metric-card">
     <span class="muted">Attendance reserve</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.attendance_reserve_total, unit: "₩", precision: 0) %></strong>
   </article>
   <article class="metric-card">
-    <span class="muted">Purchased books</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong>
+    <span class="muted">Book orders</span>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.purchased_book_total, unit: "₩", precision: 0) %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Additional payments</span>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.additional_payment_total, unit: "₩", precision: 0) %></strong>
   </article>
 </section>
 
-<section class="detail-grid">
-  <article class="panel stack">
+<section class="detail-grid dashboard-report-grid">
+  <article class="panel stack reserve-composition">
     <div class="section-title">
       <div>
-        <h2>Monthly attendance</h2>
-        <p class="muted">Trend across the selected fiscal period.</p>
+        <h2>Reserve leaderboard</h2>
+        <p class="muted">Attendance reserve, book spend, and additional payments rolled up by member.</p>
       </div>
-      <p class="muted"><%= @dashboard.month_label %></p>
+      <p class="muted"><%= @dashboard.fiscal_period&.name || "No period" %></p>
     </div>
 
-    <div class="trend-grid">
-      <% @dashboard.monthly_attendance.each do |point| %>
-        <article class="trend-card">
-          <span class="muted"><%= point.label %></span>
-          <strong><%= point.count %></strong>
-        </article>
-      <% end %>
-    </div>
-  </article>
-
-  <aside class="panel stack">
-    <h2>Balance inputs</h2>
-    <div class="stat-list">
-      <div><span>Attendance count</span><strong><%= @dashboard.reserve_snapshot.attendance_count %></strong></div>
-      <div><span>Book request count</span><strong><%= @dashboard.reserve_snapshot.purchase_count %></strong></div>
-      <div><span>Additional payments</span><strong><%= number_to_currency(@dashboard.reserve_snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
-    </div>
-    <p class="muted">Balance = attendance reserves - purchased books + additional payments.</p>
-  </aside>
-</section>
-
-<section class="detail-grid">
-  <article class="panel stack">
-    <div class="section-title">
-      <div>
-        <h2>Location breakdown</h2>
-        <p class="muted">Attendance distribution by meeting location for the selected scope.</p>
+    <div class="detail-grid reserve-grid">
+      <div class="stack">
+        <div class="section-title">
+          <h3>Attendance leaders</h3>
+          <span class="muted">Top members by attendance count</span>
+        </div>
+        <div class="bar-list attendance-leaderboard">
+          <% top_attendance = [@dashboard.attendance_leaderboard.map(&:attendance_count).max.to_i, 1].max %>
+          <% @dashboard.attendance_leaderboard.each do |row| %>
+            <div class="bar-row">
+              <div class="section-title compact">
+                <span><%= row.member.display_name %></span>
+                <span class="location-pill tone-<%= row.tone %>"><%= row.member.location.presence || "미정" %></span>
+              </div>
+              <div class="bar-track attendance-track">
+                <div class="bar-fill tone-<%= row.tone %>" style="width: <%= ((row.attendance_count.to_f / top_attendance) * 100).round(1) %>%"></div>
+                <strong><%= row.attendance_count %></strong>
+              </div>
+            </div>
+          <% end %>
+        </div>
       </div>
-      <p class="muted"><%= @dashboard.month_label %></p>
-    </div>
 
-    <% if @dashboard.location_breakdown.any? %>
-      <div class="bar-list">
-        <% @dashboard.location_breakdown.each do |point| %>
-          <div class="bar-row">
-            <div class="section-title">
-              <span><%= point.label %></span>
-              <strong><%= point.count %></strong>
-            </div>
-            <div class="bar-track">
-              <div class="bar-fill" style="width: <%= (point.ratio * 100).round(1) %>%"></div>
-            </div>
+      <div class="stack">
+        <div class="section-title">
+          <h3>Member reserve standings</h3>
+          <span class="muted">Balance = reserve - books + additional</span>
+        </div>
+        <% if @dashboard.reserve_leaderboard.any? %>
+          <div class="report-table-wrap">
+            <table class="data-table report-table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Balance</th>
+                  <th>Reserve</th>
+                  <th>Books</th>
+                  <th>Additional</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @dashboard.reserve_leaderboard.each do |row| %>
+                  <tr>
+                    <td>
+                      <div class="member-cell">
+                        <strong><%= row.member.display_name %></strong>
+                        <span class="location-pill tone-<%= row.tone %>"><%= row.member.location.presence || "미정" %></span>
+                      </div>
+                    </td>
+                    <td><strong><%= number_to_currency(row.balance, unit: "₩", precision: 0) %></strong></td>
+                    <td><%= number_to_currency(row.attendance_reserve, unit: "₩", precision: 0) %></td>
+                    <td><%= number_to_currency(row.book_total, unit: "₩", precision: 0) %></td>
+                    <td><%= number_to_currency(row.additional_payment_total, unit: "₩", precision: 0) %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="empty-state">
+            <h3>No reserve activity yet.</h3>
+            <p>Reserve standings will appear after attendance and book activity are imported.</p>
           </div>
         <% end %>
       </div>
-    <% else %>
-      <div class="empty-state">
-        <h3>No attendance data for this scope.</h3>
-        <p>Try another month or fiscal period.</p>
-      </div>
-    <% end %>
+    </div>
   </article>
+</section>
 
-  <aside class="panel stack">
-    <h2>Recent activity</h2>
-    <% if @dashboard.recent_meetings.any? %>
-      <div class="stack">
-        <% @dashboard.recent_meetings.each do |item| %>
-          <article class="member-card">
-            <h3><%= link_to item.meeting.title, admin_meeting_path(item.meeting) %></h3>
-            <p class="muted"><%= l(item.meeting.meeting_at, format: :long) %> · <%= item.meeting.location.presence || "No location" %></p>
-            <div class="pill-row">
-              <span class="pill"><%= item.attendance_count %> attendees</span>
-              <span class="pill"><%= item.photo_count %> photos</span>
-              <span class="pill"><%= item.meeting.review.present? ? "Review ready" : "No review" %></span>
+<section class="panel stack attendance-composition">
+  <div class="section-title">
+    <div>
+      <h2>Attendance report</h2>
+      <p class="muted">Monthly attendance trend, selected-month breakdown, meeting register, and photo digest.</p>
+    </div>
+    <p class="muted"><%= @dashboard.month_label %></p>
+  </div>
+
+  <div class="metrics inline-metrics">
+    <article class="metric-card">
+      <span class="muted">Selected month attendees</span>
+      <strong><%= @dashboard.location_breakdown.sum(&:count) %></strong>
+    </article>
+    <% @dashboard.location_breakdown.each do |point| %>
+      <article class="metric-card location-metric tone-<%= point.tone %>">
+        <span class="muted"><%= point.label %></span>
+        <strong><%= point.count %></strong>
+      </article>
+    <% end %>
+  </div>
+
+  <div class="detail-grid attendance-summary-grid">
+    <div class="stack">
+      <div class="section-title">
+        <h3>Monthly attendance by location</h3>
+        <span class="muted">Stacked by meeting location</span>
+      </div>
+      <% max_monthly_count = [@dashboard.monthly_attendance.map(&:count).max.to_i, 1].max %>
+      <div class="attendance-trend-chart">
+        <% @dashboard.monthly_attendance.each do |point| %>
+          <div class="attendance-month">
+            <div class="attendance-month-bar">
+              <div class="attendance-month-stack" style="height: <%= ((point.count.to_f / max_monthly_count) * 100).round(1) %>%">
+                <% @dashboard.location_legend.each do |location_label| %>
+                  <% segment_count = point.location_counts.fetch(location_label, 0) %>
+                  <% next if segment_count.zero? %>
+                  <div class="attendance-month-segment tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(location_label, "neutral") %>" style="height: <%= ((segment_count.to_f / point.count) * 100).round(1) %>%">
+                    <span><%= segment_count %></span>
+                  </div>
+                <% end %>
+              </div>
             </div>
-          </article>
+            <span class="attendance-month-label"><%= point.label %></span>
+          </div>
         <% end %>
       </div>
-    <% else %>
-      <div class="empty-state">
-        <h3>No meetings in this scope.</h3>
-        <p>Recent activity will appear after meetings and attendance are added.</p>
+      <div class="legend-row">
+        <% @dashboard.location_legend.each do |location_label| %>
+          <span class="legend-item">
+            <span class="legend-swatch tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(location_label, "neutral") %>"></span>
+            <%= location_label %>
+          </span>
+        <% end %>
       </div>
-    <% end %>
-  </aside>
+    </div>
+
+    <div class="stack">
+      <div class="section-title">
+        <h3>Selected month breakdown</h3>
+        <span class="muted"><%= @dashboard.month_label %></span>
+      </div>
+      <% if @dashboard.location_breakdown.any? %>
+        <div class="bar-list">
+          <% @dashboard.location_breakdown.each do |point| %>
+            <div class="bar-row">
+              <div class="section-title compact">
+                <span class="location-pill tone-<%= point.tone %>"><%= point.label %></span>
+                <strong><%= point.count %></strong>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill tone-<%= point.tone %>" style="width: <%= (point.ratio * 100).round(1) %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No attendance data for this month.</h3>
+          <p>Choose another month to inspect meeting activity.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="detail-grid register-grid">
+    <div class="panel report-panel stack">
+      <div class="section-title">
+        <h3>Meeting register</h3>
+        <span class="muted"><%= @dashboard.month_label %></span>
+      </div>
+      <% if @dashboard.meeting_digests.any? %>
+        <div class="report-table-wrap">
+          <table class="data-table report-table meeting-report-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Attendees</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @dashboard.meeting_digests.each do |digest| %>
+                <tr>
+                  <td><strong><%= link_to digest.meeting.title, admin_meeting_path(digest.meeting) %></strong></td>
+                  <td><%= l(digest.meeting.meeting_at, format: :long) %></td>
+                  <td>
+                    <div class="attendee-list">
+                      <% digest.attendees.each do |member| %>
+                        <span><%= member.display_name %></span>
+                      <% end %>
+                    </div>
+                  </td>
+                  <td><span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No meetings for this month.</h3>
+          <p>The meeting register will populate after attendance records exist in the selected month.</p>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="panel report-panel stack">
+      <div class="section-title">
+        <h3>Photo wall</h3>
+        <span class="muted"><%= @dashboard.month_label %></span>
+      </div>
+      <% photo_count = @dashboard.meeting_digests.sum { |digest| digest.photos.size } %>
+      <% if photo_count.positive? %>
+        <div class="photo-wall">
+          <% @dashboard.meeting_digests.each do |digest| %>
+            <% digest.photos.each do |photo| %>
+              <figure class="photo-card">
+                <%= image_tag(photo.source_url.presence || photo.file_path, alt: "#{digest.meeting.title} photo") %>
+                <figcaption>
+                  <strong><%= digest.meeting.title %></strong>
+                  <span><%= digest.meeting.location.presence || "미정" %> · <%= l(digest.meeting.meeting_at.to_date, format: :long) %></span>
+                </figcaption>
+              </figure>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No photos for this month.</h3>
+          <p>Photos added to meetings will appear here.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="panel stack reviews-panel">
+  <div class="section-title">
+    <div>
+      <h2>Meeting reviews</h2>
+      <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
+    </div>
+    <p class="muted"><%= @dashboard.month_label %></p>
+  </div>
+
+  <% if @dashboard.review_highlights.any? %>
+    <div class="review-grid">
+      <% @dashboard.review_highlights.each do |digest| %>
+        <article class="review-card">
+          <div class="section-title compact">
+            <div>
+              <h3><%= digest.meeting.title %></h3>
+              <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
+            </div>
+            <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
+          </div>
+          <p><%= simple_format(digest.meeting.review) %></p>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <h3>No meeting reviews for this month.</h3>
+      <p>Reviews will show here when a meeting note is saved on the meeting record.</p>
+    </div>
+  <% end %>
 </section>
