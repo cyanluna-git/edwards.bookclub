@@ -7,6 +7,13 @@ Rails.application.routes.draw do
 
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard
+
+    resources :members do
+      member do
+        patch :deactivate
+        patch :reactivate
+      end
+    end
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

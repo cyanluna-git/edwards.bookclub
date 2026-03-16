@@ -1,0 +1,75 @@
+<% if member.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(member.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% member.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:admin, member], local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :english_name, "English name" %>
+        <%= form.text_field :english_name, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :korean_name, "Korean name" %>
+        <%= form.text_field :korean_name %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :email %>
+        <%= form.email_field :email %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :department %>
+        <%= form.text_field :department %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :bio %>
+        <%= form.text_area :bio %>
+      </div>
+    </div>
+
+    <div>
+      <div class="field-stack">
+        <%= form.label :member_role, "Role" %>
+        <%= form.select :member_role, options_for_select(@role_options.map { |value| [value, value] }, member.member_role), { include_blank: "Select role" }, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :location %>
+        <%= form.select :location, options_for_select(@location_options.map { |value| [value, value] }, member.location), include_blank: "Select location" %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :joined_on, "Joined on" %>
+        <%= form.date_field :joined_on %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :active, "Status" %>
+        <%= form.select :active, options_for_select([["Active", true], ["Inactive", false]], member.active) %>
+      </div>
+
+      <% if member.persisted? %>
+        <div class="field-stack">
+          <label>Linked user</label>
+          <div class="panel"><%= member.user&.email || "None" %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", member.persisted? ? admin_member_path(member) : admin_members_path, class: "button-link secondary" %>
+  </div>
+<% end %>

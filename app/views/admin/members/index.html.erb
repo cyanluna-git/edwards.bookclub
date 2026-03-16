@@ -1,0 +1,103 @@
+<section class="hero">
+  <p class="eyebrow">Admin Members</p>
+  <h1>Member operations</h1>
+  <p class="hero-copy">
+    Replace the old SharePoint list forms with a single workspace for search, profile maintenance, and active-status control.
+  </p>
+</section>
+
+<section class="metrics">
+  <article class="metric-card">
+    <span class="muted">Total members</span>
+    <strong><%= @summary[:total] %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Active</span>
+    <strong><%= @summary[:active] %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Inactive</span>
+    <strong><%= @summary[:inactive] %></strong>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="results-header">
+    <div>
+      <h2>Find members</h2>
+      <p class="muted">Search by name, email, department, role, or location.</p>
+    </div>
+    <%= link_to "New member", new_admin_member_path, class: "button-link" %>
+  </div>
+
+  <%= form_with url: admin_members_path, method: :get, local: true do |form| %>
+    <div class="filters">
+      <div class="field">
+        <%= form.label :q, "Search" %>
+        <%= form.text_field :q, value: @filters[:q], placeholder: "Hannah, forecast, 분당..." %>
+      </div>
+
+      <div class="field">
+        <%= form.label :active, "Status" %>
+        <%= form.select :active, options_for_select([["All", ""], ["Active", "active"], ["Inactive", "inactive"]], @filters[:active]) %>
+      </div>
+
+      <div class="field">
+        <%= form.label :role, "Role" %>
+        <%= form.select :role, options_for_select([["All", ""]] + @role_options.map { |value| [value, value] }, @filters[:role]) %>
+      </div>
+
+      <div class="field">
+        <%= form.label :location, "Location" %>
+        <%= form.select :location, options_for_select([["All", ""]] + @location_options.map { |value| [value, value] }, @filters[:location]) %>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <%= form.submit "Apply filters" %>
+      <%= link_to "Reset", admin_members_path, class: "button-link secondary" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="panel">
+  <div class="results-header">
+    <h2>Results</h2>
+    <p class="muted"><%= pluralize(@members.size, "member") %> shown</p>
+  </div>
+
+  <% if @members.any? %>
+    <div class="member-grid">
+      <% @members.each do |member| %>
+        <article class="member-card">
+          <div class="results-header">
+            <div>
+              <h3><%= link_to member.english_name, admin_member_path(member) %></h3>
+              <p class="muted"><%= member.korean_name.presence || "No Korean name" %></p>
+            </div>
+            <span class="pill <%= member.active? ? "active" : "inactive" %>"><%= member.active? ? "Active" : "Inactive" %></span>
+          </div>
+
+          <div class="pill-row">
+            <span class="pill"><%= member.member_role %></span>
+            <span class="pill"><%= member.location.presence || "No location" %></span>
+          </div>
+
+          <p class="muted"><%= member.department.presence || "No department" %></p>
+
+          <div class="meta-list">
+            <div><span>Email</span><span><%= member.email.presence || "Not set" %></span></div>
+            <div><span>Attendance rows</span><span><%= member.meeting_attendances.size %></span></div>
+            <div><span>Book requests</span><span><%= member.book_requests.size %></span></div>
+            <div><span>Linked user</span><span><%= member.user&.email || "None" %></span></div>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <h3>No members matched these filters.</h3>
+      <p>Adjust the search terms or create a new member record.</p>
+    </div>
+  <% end %>
+</section>

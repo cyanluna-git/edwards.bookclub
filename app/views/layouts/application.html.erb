@@ -23,10 +23,30 @@
   </head>
 
   <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <%= link_to "Edwards Bookclub", authenticated? ? root_path : new_session_path, class: "brand" %>
+
+        <% if authenticated? %>
+          <nav class="topbar-nav">
+            <%= link_to "Home", root_path, class: "secondary" %>
+            <% if current_user.admin? %>
+              <%= link_to "Admin", admin_dashboard_path, class: "secondary" %>
+              <%= link_to "Members", admin_members_path, class: "secondary" %>
+            <% end %>
+            <span><%= current_user.email %></span>
+            <%= button_to "Sign out", destroy_session_path, method: :delete, form: { data: { turbo: false } }, class: "secondary" %>
+          </nav>
+        <% end %>
+      </div>
+    </header>
+
     <% flash.each do |type, message| %>
       <div class="flash flash-<%= type %>"><%= message %></div>
     <% end %>
 
-    <%= yield %>
+    <div class="shell">
+      <%= yield %>
+    </div>
   </body>
 </html>

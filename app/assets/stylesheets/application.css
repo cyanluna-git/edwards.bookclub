@@ -1,10 +1,354 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --bg: #f4efe4;
+  --paper: #fbf7f0;
+  --ink: #17313b;
+  --ink-soft: #55707a;
+  --accent: #b45f3c;
+  --accent-deep: #8e4325;
+  --line: #d8c8b1;
+  --success: #2b6b4b;
+  --warn: #8a5a1d;
+  --danger: #8b3d30;
+  --shadow: 0 20px 60px rgba(23, 49, 59, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(180, 95, 60, 0.18), transparent 30%),
+    linear-gradient(180deg, #f7f0e3 0%, var(--bg) 60%, #efe5d3 100%);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}
+
+a {
+  color: inherit;
+}
+
+main,
+.shell {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.shell {
+  padding: 2rem 0 3rem;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  background: rgba(251, 247, 240, 0.82);
+  border-bottom: 1px solid rgba(216, 200, 177, 0.8);
+}
+
+.topbar-inner {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0.9rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.brand {
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.topbar-nav a,
+.topbar-nav button,
+.button-link,
+button,
+input[type="submit"] {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  background: var(--ink);
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.topbar-nav a.secondary,
+.button-link.secondary,
+button.secondary {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.button-link.warn,
+button.warn {
+  background: var(--accent);
+}
+
+.button-link.danger,
+button.danger {
+  background: var(--danger);
+}
+
+.topbar-nav a:hover,
+.topbar-nav button:hover,
+.button-link:hover,
+button:hover,
+input[type="submit"]:hover {
+  transform: translateY(-1px);
+  background: var(--accent-deep);
+}
+
+.topbar-nav a.secondary:hover,
+.button-link.secondary:hover,
+button.secondary:hover {
+  background: rgba(23, 49, 59, 0.08);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.flash {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 1rem auto 0;
+  padding: 0.85rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--shadow);
+}
+
+.flash-notice {
+  border-color: rgba(43, 107, 75, 0.2);
+}
+
+.flash-alert {
+  border-color: rgba(139, 61, 48, 0.2);
+}
+
+.hero {
+  padding: 2.5rem 0 1rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  margin-bottom: 0.75rem;
+  line-height: 0.95;
+}
+
+.hero-copy {
+  max-width: 60ch;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
+.panel,
+.metric-card,
+.member-card {
+  background: rgba(251, 247, 240, 0.92);
+  border: 1px solid rgba(216, 200, 177, 0.9);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  padding: 1.4rem;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.metric-card {
+  padding: 1.2rem;
+}
+
+.metric-card strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+  margin-top: 0.4rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.field,
+.field-stack {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field-stack {
+  margin-bottom: 1rem;
+}
+
+label {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.85rem 0.95rem;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+}
+
+textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.member-grid,
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.member-grid {
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+}
+
+.detail-grid {
+  grid-template-columns: 1.5fr 1fr;
+  align-items: start;
+}
+
+.member-card {
+  padding: 1.2rem;
+}
+
+.member-card h3 {
+  margin-bottom: 0.4rem;
+}
+
+.meta-list,
+.stat-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+}
+
+.meta-list div,
+.stat-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(216, 200, 177, 0.7);
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.9rem 0;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(23, 49, 59, 0.08);
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.pill.active {
+  background: rgba(43, 107, 75, 0.12);
+  color: var(--success);
+}
+
+.pill.inactive {
+  background: rgba(139, 61, 48, 0.12);
+  color: var(--danger);
+}
+
+.errors {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(139, 61, 48, 0.2);
+  background: rgba(139, 61, 48, 0.08);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 780px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

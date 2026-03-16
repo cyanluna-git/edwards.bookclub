@@ -1,0 +1,91 @@
+<section class="hero">
+  <p class="eyebrow">Member Detail</p>
+  <h1><%= @member.english_name %></h1>
+  <p class="hero-copy">
+    Review linked operational context before editing or changing active status.
+  </p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel">
+    <div class="results-header">
+      <div>
+        <h2>Profile</h2>
+        <p class="muted"><%= @member.korean_name.presence || "No Korean name recorded" %></p>
+      </div>
+      <span class="pill <%= @member.active? ? "active" : "inactive" %>"><%= @member.active? ? "Active" : "Inactive" %></span>
+    </div>
+
+    <div class="pill-row">
+      <span class="pill"><%= @member.member_role %></span>
+      <span class="pill"><%= @member.location.presence || "No location" %></span>
+      <% if @member.leader_role? %>
+        <span class="pill">Leader</span>
+      <% end %>
+    </div>
+
+    <div class="meta-list">
+      <div><span>Email</span><span><%= @member.email.presence || "Not set" %></span></div>
+      <div><span>Department</span><span><%= @member.department.presence || "Not set" %></span></div>
+      <div><span>Joined on</span><span><%= @member.joined_on&.iso8601 || "Not set" %></span></div>
+      <div><span>Linked user</span><span><%= @member.user&.email || "None" %></span></div>
+      <div><span>Source</span><span><%= [@member.source_system, @member.source_key].compact.join(":").presence || "Manual" %></span></div>
+    </div>
+
+    <% if @member.bio.present? %>
+      <div class="field-stack">
+        <label>Bio</label>
+        <div class="panel"><%= simple_format(@member.bio) %></div>
+      </div>
+    <% end %>
+  </article>
+
+  <aside class="panel">
+    <h2>Operational context</h2>
+    <div class="stat-list">
+      <div><span>Attendance rows</span><strong><%= @member.meeting_attendances.count %></strong></div>
+      <div><span>Book requests</span><strong><%= @member.book_requests.count %></strong></div>
+      <div><span>Meetings attended</span><strong><%= @member.meetings.distinct.count %></strong></div>
+    </div>
+
+    <div class="field-stack">
+      <label>Recent book requests</label>
+      <div class="panel">
+        <% if @member.book_requests.any? %>
+          <ul>
+            <% @member.book_requests.order(requested_on: :desc, created_at: :desc).limit(5).each do |request| %>
+              <li><%= request.title %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="muted">No linked requests.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="field-stack">
+      <label>Recent meetings</label>
+      <div class="panel">
+        <% if @member.meetings.any? %>
+          <ul>
+            <% @member.meetings.distinct.order(meeting_at: :desc).limit(5).each do |meeting| %>
+              <li><%= meeting.title %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="muted">No attendance history yet.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <%= link_to "Edit member", edit_admin_member_path(@member), class: "button-link" %>
+      <% if @member.active? %>
+        <%= button_to "Mark inactive", deactivate_admin_member_path(@member), method: :patch, class: "danger" %>
+      <% else %>
+        <%= button_to "Reactivate", reactivate_admin_member_path(@member), method: :patch, class: "warn" %>
+      <% end %>
+      <%= link_to "Back to members", admin_members_path, class: "button-link secondary" %>
+    </div>
+  </aside>
+</section>
