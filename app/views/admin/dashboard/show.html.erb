@@ -1,9 +1,145 @@
-<main>
-  <h1>Admin dashboard</h1>
-  <p>Authentication and authorization baseline is active.</p>
-  <p>Signed in as <strong><%= current_user.email %></strong>.</p>
-  <p><%= link_to "Manage members", admin_members_path %></p>
-  <p><%= link_to "Manage meetings", admin_meetings_path %></p>
-  <p><%= link_to "Manage book requests", admin_book_requests_path %></p>
-  <p><%= link_to "Back to home", root_path %></p>
-</main>
+<section class="hero">
+  <p class="eyebrow">Admin Dashboard</p>
+  <h1>Operating dashboard</h1>
+  <p class="hero-copy">
+    Reserve balances, attendance trends, location distribution, and recent meeting activity from the application data model.
+  </p>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Filters</h2>
+      <p class="muted">Use fiscal period and month filters to switch between full-period and month-specific views.</p>
+    </div>
+    <div class="button-row">
+      <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
+      <%= link_to "Meetings", admin_meetings_path, class: "button-link secondary" %>
+      <%= link_to "Books", admin_book_requests_path, class: "button-link secondary" %>
+    </div>
+  </div>
+
+  <%= form_with url: admin_dashboard_path, method: :get, local: true do |form| %>
+    <div class="filters">
+      <div class="field">
+        <%= form.label :fiscal_period_id, "Fiscal period" %>
+        <%= form.select :fiscal_period_id, options_for_select([["Active/default", ""]] + @fiscal_period_options.map { |period| [period.name, period.id] }, @filters[:fiscal_period_id]) %>
+      </div>
+      <div class="field">
+        <%= form.label :month, "Month" %>
+        <%= form.month_field :month, value: @filters[:month] %>
+      </div>
+    </div>
+    <div class="button-row">
+      <%= form.submit "Apply filters" %>
+      <%= link_to "Reset", admin_dashboard_path, class: "button-link secondary" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="metrics">
+  <article class="metric-card">
+    <span class="muted">Fiscal period</span>
+    <strong><%= @dashboard.fiscal_period&.name || "None" %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Reserve balance</span>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Attendance reserve</span>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Purchased books</span>
+    <strong><%= number_to_currency(@dashboard.reserve_snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong>
+  </article>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2>Monthly attendance</h2>
+        <p class="muted">Trend across the selected fiscal period.</p>
+      </div>
+      <p class="muted"><%= @dashboard.month_label %></p>
+    </div>
+
+    <div class="trend-grid">
+      <% @dashboard.monthly_attendance.each do |point| %>
+        <article class="trend-card">
+          <span class="muted"><%= point.label %></span>
+          <strong><%= point.count %></strong>
+        </article>
+      <% end %>
+    </div>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Balance inputs</h2>
+    <div class="stat-list">
+      <div><span>Attendance count</span><strong><%= @dashboard.reserve_snapshot.attendance_count %></strong></div>
+      <div><span>Book request count</span><strong><%= @dashboard.reserve_snapshot.purchase_count %></strong></div>
+      <div><span>Additional payments</span><strong><%= number_to_currency(@dashboard.reserve_snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
+    </div>
+    <p class="muted">Balance = attendance reserves - purchased books + additional payments.</p>
+  </aside>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2>Location breakdown</h2>
+        <p class="muted">Attendance distribution by meeting location for the selected scope.</p>
+      </div>
+      <p class="muted"><%= @dashboard.month_label %></p>
+    </div>
+
+    <% if @dashboard.location_breakdown.any? %>
+      <div class="bar-list">
+        <% @dashboard.location_breakdown.each do |point| %>
+          <div class="bar-row">
+            <div class="section-title">
+              <span><%= point.label %></span>
+              <strong><%= point.count %></strong>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: <%= (point.ratio * 100).round(1) %>%"></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h3>No attendance data for this scope.</h3>
+        <p>Try another month or fiscal period.</p>
+      </div>
+    <% end %>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Recent activity</h2>
+    <% if @dashboard.recent_meetings.any? %>
+      <div class="stack">
+        <% @dashboard.recent_meetings.each do |item| %>
+          <article class="member-card">
+            <h3><%= link_to item.meeting.title, admin_meeting_path(item.meeting) %></h3>
+            <p class="muted"><%= l(item.meeting.meeting_at, format: :long) %> · <%= item.meeting.location.presence || "No location" %></p>
+            <div class="pill-row">
+              <span class="pill"><%= item.attendance_count %> attendees</span>
+              <span class="pill"><%= item.photo_count %> photos</span>
+              <span class="pill"><%= item.meeting.review.present? ? "Review ready" : "No review" %></span>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h3>No meetings in this scope.</h3>
+        <p>Recent activity will appear after meetings and attendance are added.</p>
+      </div>
+    <% end %>
+  </aside>
+</section>
