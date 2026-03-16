@@ -88,6 +88,8 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
+    assert_redirected_to member_root_path
+    follow_redirect!
     assert_match "You are not authorized to access that page.", response.body
   end
 

@@ -1,0 +1,111 @@
+<section class="hero">
+  <p class="eyebrow">Member Portal</p>
+  <h1>Your book club space</h1>
+  <p class="hero-copy">
+    View your current reserve context and manage your own book requests without using admin screens.
+  </p>
+</section>
+
+<% if current_member %>
+  <section class="metrics">
+    <article class="metric-card">
+      <span class="muted">Active period</span>
+      <strong><%= @snapshot.fiscal_period&.name || "None" %></strong>
+    </article>
+    <article class="metric-card">
+      <span class="muted">Your reserve total</span>
+      <strong><%= number_to_currency(@snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong>
+    </article>
+    <article class="metric-card">
+      <span class="muted">Book spend</span>
+      <strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong>
+    </article>
+    <article class="metric-card">
+      <span class="muted">Balance</span>
+      <strong><%= number_to_currency(@snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+    </article>
+  </section>
+
+  <section class="detail-grid">
+    <article class="panel stack">
+      <div class="section-title">
+        <div>
+          <h2>Member profile</h2>
+          <p class="muted"><%= current_member.english_name %> · <%= current_member.member_role %></p>
+        </div>
+        <%= link_to "My book requests", member_book_requests_path, class: "button-link" %>
+      </div>
+
+      <div class="meta-list">
+        <div><span>Korean name</span><span><%= current_member.korean_name.presence || "Not set" %></span></div>
+        <div><span>Location</span><span><%= current_member.location.presence || "Not set" %></span></div>
+        <div><span>Department</span><span><%= current_member.department.presence || "Not set" %></span></div>
+        <div><span>Attendance count</span><span><%= @snapshot.attendance_count %></span></div>
+        <div><span>Book requests</span><span><%= @snapshot.book_request_count %></span></div>
+      </div>
+    </article>
+
+    <aside class="panel stack">
+      <h2>Cash context</h2>
+      <div class="stat-list">
+        <div><span>Additional payments</span><strong><%= number_to_currency(@snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Purchase total</span><strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong></div>
+      </div>
+      <p class="muted">This view is scoped to your own attendance and request history only.</p>
+    </aside>
+  </section>
+
+  <section class="detail-grid">
+    <article class="panel stack">
+      <div class="section-title">
+        <h2>Recent meetings</h2>
+      </div>
+      <% if @snapshot.recent_meetings.any? %>
+        <div class="stack">
+          <% @snapshot.recent_meetings.each do |meeting| %>
+            <article class="member-card">
+              <h3><%= meeting.title %></h3>
+              <p class="muted"><%= l(meeting.meeting_at, format: :long) %> · <%= meeting.location.presence || "No location" %></p>
+              <div class="pill-row">
+                <span class="pill"><%= meeting.review.present? ? "Review available" : "No review yet" %></span>
+                <span class="pill"><%= meeting.meeting_photos.count %> photos</span>
+              </div>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No attendance history yet.</h3>
+          <p>Your recent meetings will appear here once attendance is recorded.</p>
+        </div>
+      <% end %>
+    </article>
+
+    <aside class="panel stack">
+      <div class="section-title">
+        <h2>Recent requests</h2>
+        <%= link_to "New request", new_member_book_request_path, class: "button-link secondary" %>
+      </div>
+      <% if @snapshot.recent_book_requests.any? %>
+        <div class="stack">
+          <% @snapshot.recent_book_requests.each do |request| %>
+            <article class="member-card">
+              <h3><%= link_to request.title, member_book_request_path(request) %></h3>
+              <p class="muted"><%= request.request_status.presence || "Requested" %> · <%= request.requested_on&.iso8601 || "No date" %></p>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No requests yet.</h3>
+          <p>Create your first book request from this member portal.</p>
+        </div>
+      <% end %>
+    </aside>
+  </section>
+<% else %>
+  <section class="panel stack">
+    <h2>No linked member profile</h2>
+    <p class="muted">Your account can sign in, but it is not yet linked to a member record. Ask an admin to connect your user account to a member profile before using self-service features.</p>
+  </section>
+<% end %>

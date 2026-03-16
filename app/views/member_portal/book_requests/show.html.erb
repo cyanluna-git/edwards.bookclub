@@ -1,0 +1,41 @@
+<section class="hero">
+  <p class="eyebrow">Member Portal</p>
+  <h1><%= @book_request.title %></h1>
+  <p class="hero-copy">Review your submission details and the current admin-managed status.</p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <h2>Request details</h2>
+      <div class="button-row">
+        <%= link_to "Edit submission", edit_member_book_request_path(@book_request), class: "button-link" %>
+        <%= link_to "Back", member_book_requests_path, class: "button-link secondary" %>
+      </div>
+    </div>
+    <div class="meta-list">
+      <div><span>Status</span><span><%= @book_request.request_status.presence || "Requested" %></span></div>
+      <div><span>Requested on</span><span><%= @book_request.requested_on&.iso8601 || "Not set" %></span></div>
+      <div><span>Author</span><span><%= @book_request.author.presence || "Not set" %></span></div>
+      <div><span>Publisher</span><span><%= @book_request.publisher.presence || "Not set" %></span></div>
+      <div><span>Fiscal period</span><span><%= @book_request.fiscal_period&.name || "None" %></span></div>
+      <div><span>Price</span><span><%= @book_request.price ? number_to_currency(@book_request.price, unit: "KRW ", precision: 0) : "Admin pending" %></span></div>
+      <div><span>Additional payment</span><span><%= @book_request.additional_payment ? number_to_currency(@book_request.additional_payment, unit: "KRW ", precision: 0) : "None" %></span></div>
+    </div>
+
+    <% if @book_request.comment.present? %>
+      <div class="field-stack">
+        <label>Your note</label>
+        <div class="panel"><%= simple_format(@book_request.comment) %></div>
+      </div>
+    <% end %>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Links</h2>
+    <ul class="list-clean">
+      <li><%= @book_request.link_url.present? ? link_to(@book_request.link_url, @book_request.link_url) : "No purchase link" %></li>
+      <li><%= @book_request.cover_url.present? ? link_to(@book_request.cover_url, @book_request.cover_url) : "No cover link" %></li>
+    </ul>
+  </aside>
+</section>
