@@ -1,0 +1,40 @@
+<% if fiscal_period.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(fiscal_period.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% fiscal_period.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:admin, fiscal_period], local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :name %>
+        <%= form.text_field :name, required: true %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :start_date %>
+        <%= form.date_field :start_date, required: true %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :end_date %>
+        <%= form.date_field :end_date, required: true %>
+      </div>
+    </div>
+    <div>
+      <div class="field-stack">
+        <%= form.label :active, "Status" %>
+        <%= form.select :active, options_for_select([["Inactive", false], ["Active", true]], fiscal_period.active) %>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", fiscal_period.persisted? ? admin_fiscal_period_path(fiscal_period) : admin_fiscal_periods_path, class: "button-link secondary" %>
+  </div>
+<% end %>

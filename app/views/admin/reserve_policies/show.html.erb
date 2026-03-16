@@ -1,0 +1,28 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1><%= @reserve_policy.member_role %></h1>
+  <p class="hero-copy">Review the effective window and attendance-point rule that drives reserve calculations.</p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <h2>Details</h2>
+      <div class="button-row">
+        <%= link_to "Edit", edit_admin_reserve_policy_path(@reserve_policy), class: "button-link" %>
+        <%= link_to "Back", admin_reserve_policies_path, class: "button-link secondary" %>
+      </div>
+    </div>
+    <div class="meta-list">
+      <div><span>Role</span><span><%= @reserve_policy.member_role %></span></div>
+      <div><span>Attendance points</span><span><%= @reserve_policy.attendance_points %></span></div>
+      <div><span>Effective from</span><span><%= @reserve_policy.effective_from %></span></div>
+      <div><span>Effective to</span><span><%= @reserve_policy.effective_to || "open-ended" %></span></div>
+    </div>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Usage</h2>
+    <p class="muted">Attendance reserves resolve against these policies using the attendee role and meeting date.</p>
+  </aside>
+</section>

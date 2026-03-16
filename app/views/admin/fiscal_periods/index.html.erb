@@ -1,0 +1,44 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1>Fiscal periods</h1>
+  <p class="hero-copy">Manage the period windows that drive dashboard filters, book spending scope, and reserve snapshots.</p>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Periods</h2>
+      <p class="muted">Only one period can be active at a time.</p>
+    </div>
+    <div class="button-row">
+      <%= link_to "Reserve policies", admin_reserve_policies_path, class: "button-link secondary" %>
+      <%= link_to "New fiscal period", new_admin_fiscal_period_path, class: "button-link" %>
+    </div>
+  </div>
+
+  <% if @fiscal_periods.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Dates</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @fiscal_periods.each do |period| %>
+          <tr>
+            <td><strong><%= link_to period.name, admin_fiscal_period_path(period) %></strong></td>
+            <td><%= "#{period.start_date} to #{period.end_date}" %></td>
+            <td><span class="pill <%= period.active? ? "active" : "inactive" %>"><%= period.active? ? "Active" : "Inactive" %></span></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty-state">
+      <h3>No fiscal periods yet.</h3>
+      <p>Create the first period to drive reserve and dashboard logic.</p>
+    </div>
+  <% end %>
+</section>

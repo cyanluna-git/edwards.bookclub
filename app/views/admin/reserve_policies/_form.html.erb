@@ -1,0 +1,40 @@
+<% if reserve_policy.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(reserve_policy.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% reserve_policy.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:admin, reserve_policy], local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :member_role, "Role" %>
+        <%= form.text_field :member_role, required: true %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :attendance_points %>
+        <%= form.number_field :attendance_points, min: 0, required: true %>
+      </div>
+    </div>
+    <div>
+      <div class="field-stack">
+        <%= form.label :effective_from %>
+        <%= form.date_field :effective_from, required: true %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :effective_to %>
+        <%= form.date_field :effective_to %>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", reserve_policy.persisted? ? admin_reserve_policy_path(reserve_policy) : admin_reserve_policies_path, class: "button-link secondary" %>
+  </div>
+<% end %>

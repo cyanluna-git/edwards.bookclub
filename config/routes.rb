@@ -21,6 +21,8 @@ Rails.application.routes.draw do
     end
 
     resources :book_requests
+    resources :fiscal_periods
+    resources :reserve_policies
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

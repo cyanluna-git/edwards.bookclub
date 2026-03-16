@@ -1,0 +1,29 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1><%= @fiscal_period.name %></h1>
+  <p class="hero-copy">Review the period window and whether it is the single active scope used by default across the app.</p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <h2>Details</h2>
+      <div class="button-row">
+        <%= link_to "Edit", edit_admin_fiscal_period_path(@fiscal_period), class: "button-link" %>
+        <%= link_to "Back", admin_fiscal_periods_path, class: "button-link secondary" %>
+      </div>
+    </div>
+    <div class="meta-list">
+      <div><span>Start date</span><span><%= @fiscal_period.start_date %></span></div>
+      <div><span>End date</span><span><%= @fiscal_period.end_date %></span></div>
+      <div><span>Status</span><span><%= @fiscal_period.active? ? "Active" : "Inactive" %></span></div>
+      <div><span>Meetings linked</span><span><%= @fiscal_period.meetings.count %></span></div>
+      <div><span>Book requests linked</span><span><%= @fiscal_period.book_requests.count %></span></div>
+    </div>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Usage</h2>
+    <p class="muted">Reserve snapshots and dashboard filters default to the active fiscal period.</p>
+  </aside>
+</section>
