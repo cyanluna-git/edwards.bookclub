@@ -70,6 +70,23 @@ python3 scripts/export_pbix_migration_assets.py \
   --out artifacts
 ```
 
+## Import pipeline
+
+Run the first-pass importer with the PBIX-exported members CSV and SharePoint-style CSV exports:
+
+```bash
+source script/dev-env.sh
+BOOK_REQUESTS_CSV=test/fixtures/imports/book_requests.csv \
+ATTENDANCE_CSV=test/fixtures/imports/attendance.csv \
+bundle exec bin/rake bookclub:import
+```
+
+Notes:
+
+- `MEMBERS_CSV` defaults to `artifacts/csv/Members.csv` when present.
+- `BOOK_REQUESTS_CSV` and `ATTENDANCE_CSV` should point to SharePoint export CSV files.
+- Re-running the task is designed to update existing imported rows instead of duplicating them.
+
 ## Current migration direction
 
 - Application stack: Rails

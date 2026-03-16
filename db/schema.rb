@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_014500) do
   create_table "book_requests", force: :cascade do |t|
     t.decimal "additional_payment", precision: 12, scale: 2
     t.string "author"
@@ -25,12 +25,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
     t.string "rating"
     t.string "request_status"
     t.date "requested_on"
+    t.string "source_key"
+    t.string "source_system"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["fiscal_period_id"], name: "index_book_requests_on_fiscal_period_id"
     t.index ["member_id"], name: "index_book_requests_on_member_id"
     t.index ["request_status"], name: "index_book_requests_on_request_status"
     t.index ["requested_on"], name: "index_book_requests_on_requested_on"
+    t.index ["source_system", "source_key"], name: "index_book_requests_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "fiscal_periods", force: :cascade do |t|
@@ -48,10 +51,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
     t.integer "member_id", null: false
     t.text "note"
     t.boolean "reserve_exempt", default: false, null: false
+    t.string "source_key"
+    t.string "source_system"
     t.datetime "updated_at", null: false
     t.index ["meeting_id", "member_id"], name: "index_meeting_attendances_on_meeting_id_and_member_id", unique: true
     t.index ["meeting_id"], name: "index_meeting_attendances_on_meeting_id"
     t.index ["member_id"], name: "index_meeting_attendances_on_member_id"
+    t.index ["source_system", "source_key"], name: "index_meeting_attendances_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "meeting_photos", force: :cascade do |t|
@@ -60,9 +66,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
     t.string "file_path"
     t.integer "meeting_id", null: false
     t.integer "sort_order", default: 0, null: false
+    t.string "source_key"
+    t.string "source_system"
     t.string "source_url"
     t.datetime "updated_at", null: false
     t.index ["meeting_id"], name: "index_meeting_photos_on_meeting_id"
+    t.index ["source_system", "source_key"], name: "index_meeting_photos_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "meetings", force: :cascade do |t|
@@ -75,12 +84,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
     t.datetime "meeting_at", null: false
     t.boolean "reserve_exempt_default", default: false, null: false
     t.text "review"
+    t.string "source_key"
+    t.string "source_system"
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_meetings_on_created_by_id"
     t.index ["fiscal_period_id"], name: "index_meetings_on_fiscal_period_id"
     t.index ["location"], name: "index_meetings_on_location"
     t.index ["meeting_at"], name: "index_meetings_on_meeting_at"
+    t.index ["source_system", "source_key"], name: "index_meetings_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "members", force: :cascade do |t|
@@ -94,10 +106,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_011200) do
     t.string "korean_name"
     t.string "location"
     t.string "member_role", null: false
+    t.string "source_key"
+    t.string "source_system"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_members_on_email", unique: true
     t.index ["location"], name: "index_members_on_location"
     t.index ["member_role"], name: "index_members_on_member_role"
+    t.index ["source_system", "source_key"], name: "index_members_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "reserve_policies", force: :cascade do |t|

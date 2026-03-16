@@ -1,0 +1,5 @@
+ID,Title,모임일시,참석자.lookupId,참석자.lookupValue,Location,ImageURL,No적립금?,후기
+2001,2026-02 Meetup,2026-02-14 19:00:00,1,Hannah Lee,천안,https://example.com/meetup.jpg,false,Great discussion
+2002,2026-02 Meetup,2026-02-14 19:00:00,2,Gerald Park,천안,,false,
+2003,2026-02 Meetup,2026-02-14 19:00:00,999,Unknown Member,천안,,true,
+2004,Invalid Date Meetup,not-a-date,1,Hannah Lee,아산,,false,Bad row

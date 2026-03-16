@@ -7,5 +7,6 @@ class Meeting < ApplicationRecord
   has_many :meeting_photos, dependent: :delete_all
 
   validates :title, :meeting_at, presence: true
+  validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
   validates :reserve_exempt_default, inclusion: { in: [true, false] }
 end

@@ -6,6 +6,7 @@ class Member < ApplicationRecord
 
   validates :english_name, :member_role, presence: true
   validates :email, uniqueness: true, allow_blank: true
+  validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
   validates :active, inclusion: { in: [true, false] }
 
   def leader_role?

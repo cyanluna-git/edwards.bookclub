@@ -1,0 +1,3 @@
+ID,Title,한글이름,부서,email,Role,Location,isLeader
+1,Hannah Lee,이현아,Planning,hannah.lee@example.com,정회원,천안,false
+2,Gerald Park,박근윤,Engineering,gerald.park@example.com,Lead:총무,아산,true
