@@ -111,14 +111,16 @@ Recommended cutover:
 3. Take a final backup of the Rails production volume with `script/backup-production.sh`.
 4. Run the importer against the final exports.
 5. Run reconciliation checks against the PBIX baseline where applicable.
-6. Verify the Rails admin screens:
+6. Run reserve-history reconciliation after office-tenure backfill:
+   - `bundle exec bin/rake bookclub:reconcile_history`
+7. Verify the Rails admin screens:
    - members
    - meetings / attendance / photos / reviews
    - book requests / reserve snapshot
    - fiscal periods / reserve policies
-7. Verify member sign-in and member portal scoping.
-8. Point operators to the Rails app and stop routine edits in SharePoint.
-9. Keep the PBIX file as a read-only reference during the first live period.
+8. Verify member sign-in and member portal scoping.
+9. Point operators to the Rails app and stop routine edits in SharePoint.
+10. Keep the PBIX file as a read-only reference during the first live period.
 
 ## Cutover Validation
 
@@ -126,6 +128,7 @@ Minimum validation checklist:
 
 - `bundle exec bin/rails test`
 - `bundle exec bin/rake bookclub:reconcile`
+- `bundle exec bin/rake bookclub:reconcile_history`
 - admin can sign in
 - member user can sign in
 - active fiscal period is correct
@@ -170,3 +173,20 @@ Recommended dry-run cadence:
 
 - once before staging a release candidate
 - once again immediately before real cutover using fresh export files
+
+## Leadership Handoff And Reserve Corrections
+
+When a chairperson, secretary, or site leader changes:
+
+1. End the outgoing office assignment with `effective_to = day before the new assignee starts`.
+2. Create the incoming assignment with the exact `effective_from` date.
+3. Re-run `bookclub:snapshot_attendance_awards` if you corrected historical dates.
+4. Re-run `bookclub:reconcile_history` and review any remaining blockers.
+
+Do not model leadership changes by adding fake attendance rows.
+
+For one-off reserve exceptions:
+
+1. Edit the attendance row.
+2. Use `override_points` and write a note explaining the reason.
+3. Keep the underlying attendance count truthful.

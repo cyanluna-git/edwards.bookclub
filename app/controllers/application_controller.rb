@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_current_request_context
 
-  helper_method :current_user, :current_member, :authenticated?
+  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?
 
   private
 
@@ -33,9 +33,13 @@ class ApplicationController < ActionController::Base
 
   def require_admin!
     authenticate_user!
-    return if performed? || current_user&.admin?
+    return if performed? || can_manage_club?
 
     redirect_to root_path, alert: "You are not authorized to access that page."
+  end
+
+  def can_manage_club?
+    current_user&.can_manage_club?
   end
 
   def set_current_request_context

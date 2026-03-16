@@ -133,6 +133,61 @@ source script/dev-env.sh
 bundle exec bin/rake bookclub:reconcile
 ```
 
+Generate a reserve-history reconciliation report for manual overrides, missing office-tenure data, and suspicious same-day multiple attendance:
+
+```bash
+source script/dev-env.sh
+bundle exec bin/rake bookclub:reconcile_history
+```
+
+## Office assignment backfill
+
+The historical office-assignment foundation is now separate from `members.member_role`.
+
+Preview the current backfill mapping without writing rows:
+
+```bash
+source script/dev-env.sh
+bundle exec bin/rake bookclub:backfill_offices
+```
+
+Apply the backfill with an explicit effective start date:
+
+```bash
+source script/dev-env.sh
+EFFECTIVE_FROM=2026-01-01 DRY_RUN=false bundle exec bin/rake bookclub:backfill_offices
+```
+
+Notes:
+
+- `member_role` remains in place for profile/search compatibility during the transition.
+- `bookclub:backfill_offices` reads `config/bookclub/office_tenures.yml` first and falls back to `member_role` labels for members not listed there.
+- Member entries in `config/bookclub/office_tenures.yml` are authoritative for that member and should contain the real historical handoff dates when known.
+- Use `REPLACE_EXISTING=true` only when you intentionally want to wipe and rebuild office-tenure rows before reapplying a corrected plan.
+- `bookclub:backfill_offices` currently maps `회장`, `총무`, and `Lead` roles into effective-dated office assignments.
+- Site-leader backfill requires a member location; missing locations are reported as warnings.
+
+Backfill attendance award snapshots after office assignments are in place:
+
+```bash
+source script/dev-env.sh
+bundle exec bin/rake bookclub:snapshot_attendance_awards
+```
+
+Apply the attendance snapshot refresh:
+
+```bash
+source script/dev-env.sh
+DRY_RUN=false bundle exec bin/rake bookclub:snapshot_attendance_awards
+```
+
+Notes:
+
+- Attendance now stores a default `awarded_points` snapshot plus an optional `override_points`.
+- Effective reserve payout follows `override_points` first, then the stored snapshot.
+- Re-run the snapshot task after major office-tenure backfills or manual historical corrections.
+- Use `override_points` for one-off reserve corrections instead of creating fake attendance rows.
+
 ## Operations
 
 Deployment, backup, restore, and cutover guidance lives in:

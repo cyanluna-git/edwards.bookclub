@@ -49,6 +49,7 @@
     <div class="stat-list">
       <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
       <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
+      <div><span>Attendance reserve</span><strong><%= number_to_currency(@attendances.sum { |attendance| attendance.effective_awarded_points }, unit: "₩", precision: 0) %></strong></div>
       <div><span>Photo records</span><strong><%= @photos.size %></strong></div>
     </div>
     <div class="button-row">
@@ -78,6 +79,10 @@
       <%= form.label :note %>
       <%= form.text_field :note, placeholder: "Optional attendance note" %>
     </div>
+    <div class="field">
+      <%= form.label :override_points, "Manual points override" %>
+      <%= form.number_field :override_points, min: 0, placeholder: "Blank = policy default" %>
+    </div>
     <div class="inline-actions">
       <%= form.submit "Add attendee" %>
     </div>
@@ -89,7 +94,7 @@
         <tr>
           <th>Member</th>
           <th>Role</th>
-          <th>Reserve rule</th>
+          <th>Reserve</th>
           <th>Note</th>
           <th>Actions</th>
         </tr>
@@ -106,6 +111,10 @@
                   <%= form.select :reserve_exempt, options_for_select([["Reserve applies", false], ["Reserve exempt", true]], attendance.reserve_exempt) %>
                 </div>
                 <div class="field">
+                  <%= form.label :override_points, "Override points" %>
+                  <%= form.number_field :override_points, min: 0, value: attendance.override_points %>
+                </div>
+                <div class="field">
                   <%= form.label :note, "Attendance note" %>
                   <%= form.text_field :note, value: attendance.note %>
                 </div>
@@ -113,6 +122,11 @@
                   <%= form.submit "Save" %>
                 </div>
               <% end %>
+              <div class="meta-list compact-meta">
+                <div><span>Effective award</span><span><%= number_to_currency(attendance.effective_awarded_points, unit: "₩", precision: 0) %></span></div>
+                <div><span>Default snapshot</span><span><%= number_to_currency(attendance.awarded_points.to_i, unit: "₩", precision: 0) %></span></div>
+                <div><span>Source</span><span><%= attendance.award_source_label %></span></div>
+              </div>
             </td>
             <td><%= attendance.note.presence || "None" %></td>
             <td>

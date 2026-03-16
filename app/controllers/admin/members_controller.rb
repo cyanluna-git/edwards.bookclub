@@ -5,11 +5,15 @@ module Admin
 
     def index
       @filters = index_filters
-      @members = Member.filter(@filters).includes(:user, :meeting_attendances, :book_requests)
+      @members = Member
+        .filter(@filters)
+        .includes(:user, :member_office_assignments, :meeting_attendances, :book_requests)
       @summary = {
         total: Member.count,
         active: Member.where(active: true).count,
-        inactive: Member.where(active: false).count
+        inactive: Member.where(active: false).count,
+        linked_access: User.where.not(member_id: nil).count,
+        managers: User.includes(member: :member_office_assignments).count(&:can_manage_club?)
       }
     end
 

@@ -8,7 +8,7 @@ module Imports
 
     def call
       each_row do |row|
-        attendance_source_key = normalize_text(row["ID"])
+        attendance_source_key = attendance_row_key(row)
         meeting_at = parse_datetime(row["모임일시"])
 
         if attendance_source_key.blank? || meeting_at.blank?
@@ -38,7 +38,7 @@ module Imports
           meeting:,
           member:,
           reserve_exempt: parse_boolean(row["No적립금?"]),
-          note: normalize_text(row["후기"])
+          note: nil
         )
 
         if attendance.save
@@ -55,6 +55,14 @@ module Imports
     end
 
     private
+
+    def attendance_row_key(row)
+      row_id = normalize_text(row["ID"])
+      member_id = normalize_text(row["참석자.lookupId"])
+      return if row_id.blank? || member_id.blank?
+
+      "#{row_id}:#{member_id}"
+    end
 
     def upsert_meeting(row, meeting_at)
       raw_title = normalize_text(row["Title"])
@@ -94,7 +102,7 @@ module Imports
 
       photo = MeetingPhoto.find_or_initialize_by(
         source_system: PHOTO_SOURCE_SYSTEM,
-        source_key: "#{attendance_source_key}:image"
+        source_key: Digest::SHA256.hexdigest([meeting.source_key, source_url].join("|"))
       )
       new_record = photo.new_record?
       photo.assign_attributes(meeting:, source_url:)

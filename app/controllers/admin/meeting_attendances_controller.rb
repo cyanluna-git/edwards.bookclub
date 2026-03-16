@@ -37,7 +37,7 @@ module Admin
     end
 
     def attendance_params
-      params.require(:meeting_attendance).permit(:member_id, :reserve_exempt, :note)
+      params.require(:meeting_attendance).permit(:member_id, :reserve_exempt, :override_points, :note)
     end
   end
 end

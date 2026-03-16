@@ -2,7 +2,7 @@ require "test_helper"
 
 class MemberPortalFlowTest < ActionDispatch::IntegrationTest
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [MeetingPhoto, MeetingAttendance, Meeting, MemberOfficeAssignment, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)
@@ -137,10 +137,22 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to admin_dashboard_path
   end
 
+  test "chairperson managers are redirected away from member portal" do
+    chairperson_member = Member.create!(english_name: "Gerald Park", member_role: "정회원", active: true)
+    chairperson_member.member_office_assignments.create!(office_type: "chairperson", effective_from: @period.start_date)
+    chairperson_user = User.create!(email: "gerald.park@edwardsvacuum.com", password: "alskqp10", password_confirmation: "alskqp10", role: "member", member: chairperson_member)
+
+    sign_in_as(chairperson_user, password: "alskqp10")
+
+    get member_root_path
+
+    assert_redirected_to admin_dashboard_path
+  end
+
   private
 
-  def sign_in_as(user)
-    post session_path, params: { email: user.email, password: "secret123" }
+  def sign_in_as(user, password: "secret123")
+    post session_path, params: { email: user.email, password: password }
     follow_redirect!
   end
 

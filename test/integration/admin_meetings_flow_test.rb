@@ -2,11 +2,14 @@ require "test_helper"
 
 class AdminMeetingsFlowTest < ActionDispatch::IntegrationTest
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [MeetingPhoto, MeetingAttendance, Meeting, MemberOfficeAssignment, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
+    ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)
+    ReservePolicy.create!(member_role: "Lead", attendance_points: 10000, effective_from: @period.start_date, effective_to: @period.end_date)
     @member_one = Member.create!(english_name: "Hannah Lee", member_role: "정회원", location: "천안", active: true)
     @member_two = Member.create!(english_name: "Gerald Park", member_role: "Lead", location: "분당", active: true)
+    @member_two.member_office_assignments.create!(office_type: "site_leader", location: "분당", effective_from: @period.start_date)
     @member_user = User.create!(email: "member@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @member_one)
     @admin = User.create!(email: "admin@example.com", password: "secret123", password_confirmation: "secret123", role: "admin")
   end
@@ -38,7 +41,7 @@ class AdminMeetingsFlowTest < ActionDispatch::IntegrationTest
     assert_equal "아산", meeting.location
   end
 
-  test "admin can manage attendees and reserve exemptions" do
+  test "admin can manage attendees, reserve exemptions, and manual overrides" do
     sign_in_as(@admin)
     meeting = Meeting.create!(title: "Ops Meetup", meeting_at: Time.zone.parse("2026-05-10 19:00"), location: "천안", fiscal_period: @period, created_by: @admin)
 
@@ -47,12 +50,20 @@ class AdminMeetingsFlowTest < ActionDispatch::IntegrationTest
     attendance = meeting.meeting_attendances.find_by!(member: @member_one)
     assert_redirected_to admin_meeting_path(meeting)
     assert_not attendance.reserve_exempt?
+    assert_equal 5000, attendance.awarded_points
 
-    patch admin_meeting_attendance_path(meeting, attendance), params: { meeting_attendance: { reserve_exempt: "true", note: "Guest speaker" } }
+    post admin_meeting_attendances_path(meeting), params: { meeting_attendance: { member_id: @member_two.id, reserve_exempt: "false", override_points: "11000", note: "Leader" } }
+
+    leader_attendance = meeting.meeting_attendances.find_by!(member: @member_two)
+    assert_equal 10000, leader_attendance.awarded_points
+    assert_equal 11000, leader_attendance.effective_awarded_points
+
+    patch admin_meeting_attendance_path(meeting, attendance), params: { meeting_attendance: { reserve_exempt: "true", note: "Guest speaker", override_points: "" } }
 
     attendance.reload
     assert attendance.reserve_exempt?
     assert_equal "Guest speaker", attendance.note
+    assert_equal 0, attendance.effective_awarded_points
 
     post admin_meeting_attendances_path(meeting), params: { meeting_attendance: { member_id: @member_one.id, reserve_exempt: "false" } }
 
@@ -120,6 +131,7 @@ class AdminMeetingsFlowTest < ActionDispatch::IntegrationTest
     assert_match "Circle shot", response.body
     assert_match attendance.note, response.body
     assert_match "Great discussion", response.body
+    assert_match "Effective award", response.body
   end
 
   private

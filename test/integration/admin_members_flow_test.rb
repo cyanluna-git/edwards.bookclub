@@ -2,7 +2,7 @@ require "test_helper"
 
 class AdminMembersFlowTest < ActionDispatch::IntegrationTest
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [MeetingPhoto, MeetingAttendance, Meeting, MemberOfficeAssignment, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)
@@ -10,12 +10,15 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
 
     @active_member = Member.create!(english_name: "Hannah Lee", korean_name: "이현아", email: "hannah@example.com", department: "Planning", member_role: "정회원", location: "천안", active: true)
     @inactive_member = Member.create!(english_name: "Min Seo", korean_name: "민서", email: "min@example.com", department: "Quality", member_role: "Lead", location: "분당", active: false)
+    @chairperson_member = Member.create!(english_name: "Gerald Park", korean_name: "박근윤", email: "gerald.park@edwardsvacuum.com", department: "Control Engineering", member_role: "정회원:회장:Lead", location: "아산", active: true)
+    @chairperson_member.member_office_assignments.create!(office_type: "chairperson", effective_from: @period.start_date)
     @meeting = Meeting.create!(title: "March Meetup", meeting_at: Time.zone.parse("2026-03-10 19:00"), fiscal_period: @period)
     MeetingAttendance.create!(meeting: @meeting, member: @active_member)
     BookRequest.create!(member: @active_member, title: "Thinking in Systems", fiscal_period: @period)
 
     @admin = User.create!(email: "admin@example.com", password: "secret123", password_confirmation: "secret123", role: "admin")
     @member_user = User.create!(email: "member@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @active_member)
+    @chairperson_user = User.create!(email: "chairperson@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @chairperson_member)
   end
 
   test "admin can search and filter members" do
@@ -88,7 +91,7 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_redirected_to member_root_path
+    assert_redirected_to reports_path
     follow_redirect!
     assert_match "You are not authorized to access that page.", response.body
   end
@@ -102,6 +105,51 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
     assert_match "Attendance rows", response.body
     assert_match "Book requests", response.body
     assert_match "Thinking in Systems", response.body
+    assert_match "Access control", response.body
+  end
+
+  test "admin can create update and remove linked access for a member" do
+    sign_in_as(@admin)
+
+    post admin_member_access_path(@inactive_member), params: {
+      user_access: {
+        email: "gerald.park@edwardsvacuum.com",
+        role: "admin",
+        password: "alskqp10",
+        password_confirmation: "alskqp10"
+      }
+    }
+
+    assert_redirected_to admin_member_path(@inactive_member)
+    access_user = @inactive_member.reload.user
+    assert_equal "gerald.park@edwardsvacuum.com", access_user.email
+    assert access_user.admin?
+
+    patch admin_member_access_path(@inactive_member), params: {
+      user_access: {
+        email: "gerald.park@edwardsvacuum.com",
+        role: "member",
+        password: "",
+        password_confirmation: ""
+      }
+    }
+
+    assert_redirected_to admin_member_path(@inactive_member)
+    assert @inactive_member.reload.user.member?
+
+    delete admin_member_access_path(@inactive_member)
+
+    assert_redirected_to admin_member_path(@inactive_member)
+    assert_nil @inactive_member.reload.user
+  end
+
+  test "chairperson can access admin member screens" do
+    sign_in_as(@chairperson_user)
+
+    get admin_members_path
+
+    assert_response :success
+    assert_match "Member operations", response.body
   end
 
   private

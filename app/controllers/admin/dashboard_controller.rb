@@ -4,6 +4,7 @@ module Admin
       @fiscal_period_options = FiscalPeriod.active_first
       @filters = params.permit(:fiscal_period_id, :month).to_h.symbolize_keys
       fiscal_period = selected_fiscal_period
+      @dashboard_path = admin_dashboard_path
       @dashboard = Admin::DashboardSnapshot.new(
         fiscal_period:,
         month: @filters[:month]

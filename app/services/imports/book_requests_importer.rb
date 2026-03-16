@@ -37,7 +37,7 @@ module Imports
           comment: normalize_text(row["신청인한줄평!"]),
           rating: normalize_text(row["별점"]),
           requested_on:,
-          additional_payment: parse_decimal(row["추가납입금"]),
+          additional_payment: parse_additional_payment(row["추가납입금"]),
           fiscal_period: fiscal_period_for(requested_on)
         )
 
@@ -49,6 +49,15 @@ module Imports
       end
 
       result
+    end
+
+    private
+
+    def parse_additional_payment(value)
+      amount = parse_decimal(value)
+      return if amount == BigDecimal("-10.0")
+
+      amount
     end
   end
 end

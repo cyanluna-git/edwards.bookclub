@@ -13,4 +13,13 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal "admin@example.com", user.email
   end
+
+  test "chairperson can manage the club without explicit admin role" do
+    member = Member.create!(english_name: "Gerald Park", member_role: "정회원", active: true)
+    member.member_office_assignments.create!(office_type: "chairperson", effective_from: Date.current.beginning_of_year)
+    user = User.create!(email: "gerald@example.com", password: "secret123", role: "member", member: member)
+
+    assert user.can_manage_club?
+    assert_equal "Chairperson", user.management_access_label
+  end
 end

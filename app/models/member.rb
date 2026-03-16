@@ -3,6 +3,7 @@ class Member < ApplicationRecord
   SEARCH_COLUMNS = %w[english_name korean_name email department location member_role].freeze
 
   has_one :user, dependent: :nullify
+  has_many :member_office_assignments, dependent: :delete_all
   has_many :meeting_attendances, dependent: :delete_all
   has_many :meetings, through: :meeting_attendances
   has_many :book_requests, dependent: :nullify
@@ -65,7 +66,21 @@ class Member < ApplicationRecord
     "정회원"
   end
 
+  def reserve_policy_role_on(date)
+    return "Lead" if member_office_assignments.effective_on(date).exists?
+
+    reserve_policy_role
+  end
+
   def display_name
     korean_name.presence || english_name
+  end
+
+  def office_assignments_on(date)
+    member_office_assignments.effective_on(date).ordered
+  end
+
+  def office_labels_on(date)
+    office_assignments_on(date).map(&:display_label)
   end
 end

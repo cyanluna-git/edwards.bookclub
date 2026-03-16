@@ -38,6 +38,22 @@
         <div class="panel"><%= simple_format(@member.bio) %></div>
       </div>
     <% end %>
+
+    <div class="field-stack">
+      <label>Current office assignments</label>
+      <div class="panel">
+        <% current_assignments = @member.office_labels_on(Date.current) %>
+        <% if current_assignments.any? %>
+          <div class="pill-row">
+            <% current_assignments.each do |label| %>
+              <span class="pill"><%= label %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="muted">No active office assignments today.</p>
+        <% end %>
+      </div>
+    </div>
   </article>
 
   <aside class="panel">
@@ -88,4 +104,62 @@
       <%= link_to "Back to members", admin_members_path, class: "button-link secondary" %>
     </div>
   </aside>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Access control</h2>
+      <p class="muted">Manage sign-in access here. Explicit `admin` stays separate from office-based chairperson access.</p>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <article class="panel">
+      <div class="meta-list">
+        <div><span>Linked access</span><span><%= @member.user&.email || "None" %></span></div>
+        <div><span>App role</span><span><%= @member.user&.role || "None" %></span></div>
+        <div><span>Effective access</span><span><%= @member.user&.management_access_label || "No account" %></span></div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <%= form_with url: admin_member_access_path(@member), method: @member.user.present? ? :patch : :post, scope: :user_access, local: true do |form| %>
+        <div class="detail-grid">
+          <div>
+            <div class="field-stack">
+              <%= form.label :email, "Login email" %>
+              <%= form.email_field :email, value: @member.user&.email || @member.email, required: true %>
+            </div>
+
+            <div class="field-stack">
+              <%= form.label :role, "App role" %>
+              <%= form.select :role, options_for_select([["Member", "member"], ["Admin", "admin"]], @member.user&.role || "member") %>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-stack">
+              <%= form.label :password, @member.user.present? ? "New password" : "Temporary password" %>
+              <%= form.password_field :password, autocomplete: "new-password" %>
+            </div>
+
+            <div class="field-stack">
+              <%= form.label :password_confirmation, "Confirm password" %>
+              <%= form.password_field :password_confirmation, autocomplete: "new-password" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <%= form.submit(@member.user.present? ? "Update access" : "Create access") %>
+        </div>
+      <% end %>
+      <% if @member.user.present? %>
+        <div class="button-row">
+          <%= button_to "Remove access", admin_member_access_path(@member), method: :delete, class: "danger" %>
+        </div>
+      <% end %>
+    </article>
+  </div>
 </section>

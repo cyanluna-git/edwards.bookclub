@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_014500) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_061000) do
   create_table "book_requests", force: :cascade do |t|
     t.decimal "additional_payment", precision: 12, scale: 2
     t.string "author"
@@ -46,10 +46,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_014500) do
   end
 
   create_table "meeting_attendances", force: :cascade do |t|
+    t.datetime "awarded_at"
+    t.integer "awarded_points"
+    t.string "awarded_policy_role"
     t.datetime "created_at", null: false
     t.integer "meeting_id", null: false
     t.integer "member_id", null: false
     t.text "note"
+    t.integer "override_points"
     t.boolean "reserve_exempt", default: false, null: false
     t.string "source_key"
     t.string "source_system"
@@ -93,6 +97,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_014500) do
     t.index ["location"], name: "index_meetings_on_location"
     t.index ["meeting_at"], name: "index_meetings_on_meeting_at"
     t.index ["source_system", "source_key"], name: "index_meetings_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
+  end
+
+  create_table "member_office_assignments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.date "effective_from", null: false
+    t.date "effective_to"
+    t.string "location"
+    t.integer "member_id", null: false
+    t.text "note"
+    t.string "office_type", null: false
+    t.string "source_key"
+    t.string "source_system"
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_member_office_assignments_on_created_by_id"
+    t.index ["member_id", "office_type", "location", "effective_from"], name: "index_member_office_assignments_on_member_scope_and_start", unique: true
+    t.index ["member_id"], name: "index_member_office_assignments_on_member_id"
+    t.index ["office_type", "location", "effective_from"], name: "index_member_office_assignments_on_office_scope_and_start"
+    t.index ["source_system", "source_key"], name: "index_member_office_assignments_on_source_system_and_source_key", unique: true, where: "source_key IS NOT NULL"
   end
 
   create_table "members", force: :cascade do |t|
@@ -143,5 +166,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_014500) do
   add_foreign_key "meeting_photos", "meetings", on_delete: :cascade
   add_foreign_key "meetings", "fiscal_periods", on_delete: :nullify
   add_foreign_key "meetings", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "member_office_assignments", "members", on_delete: :cascade
+  add_foreign_key "member_office_assignments", "users", column: "created_by_id", on_delete: :nullify
   add_foreign_key "users", "members", on_delete: :nullify
 end

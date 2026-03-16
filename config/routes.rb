@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   root "home#show"
+  get "/reports", to: "reports#show", as: :reports
 
   get "/sign-in", to: "sessions#new", as: :new_session
   post "/sign-in", to: "sessions#create", as: :session
@@ -9,6 +10,8 @@ Rails.application.routes.draw do
     get "/", to: "dashboard#show", as: :dashboard
 
     resources :members do
+      resource :access, controller: "member_accesses", only: %i[create update destroy]
+
       member do
         patch :deactivate
         patch :reactivate

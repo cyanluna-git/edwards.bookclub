@@ -27,7 +27,7 @@ module MemberPortal
       requests = BookRequest.where(member: @member)
       requests = requests.where(fiscal_period_id: @fiscal_period.id) if @fiscal_period
 
-      attendance_reserve_total = attendances.sum { |attendance| reserve_points_for(attendance) }
+      attendance_reserve_total = attendances.sum { |attendance| attendance.effective_awarded_points.to_d }
       purchased_book_total = requests.sum(:price).to_d
       additional_payment_total = requests.sum(:additional_payment).to_d
 
@@ -46,18 +46,6 @@ module MemberPortal
     end
 
     private
-
-    def reserve_points_for(attendance)
-      meeting_date = attendance.meeting.meeting_at.to_date
-      policy = ReservePolicy
-        .where(member_role: attendance.member.reserve_policy_role)
-        .where("effective_from <= ? AND (effective_to IS NULL OR effective_to >= ?)", meeting_date, meeting_date)
-        .order(effective_from: :desc)
-        .first
-
-      policy&.attendance_points.to_i
-    end
-
     def empty_result
       Result.new(
         member: nil,

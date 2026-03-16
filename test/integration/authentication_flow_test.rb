@@ -14,10 +14,10 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_redirected_to admin_dashboard_path
+    assert_redirected_to reports_path
     follow_redirect!
     assert_response :success
-    assert_match "Book club reporting room", response.body
+    assert_match "Reporting room", response.body
 
     delete destroy_session_path
 
@@ -46,18 +46,17 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
   test "member users can resolve the linked member but cannot access admin" do
     post session_path, params: { email: @member_user.email, password: "secret123" }
     follow_redirect!
-    assert_redirected_to member_root_path
+    assert_redirected_to reports_path
     follow_redirect!
 
     assert_response :success
-    assert_match "Your book club space", response.body
-    assert_match "Hannah Lee", response.body
+    assert_match "Reporting room", response.body
 
     get admin_dashboard_path
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_redirected_to member_root_path
+    assert_redirected_to reports_path
     follow_redirect!
     assert_match "You are not authorized to access that page.", response.body
   end

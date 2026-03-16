@@ -6,10 +6,27 @@ import json
 import shutil
 import sys
 import zipfile
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 from pbixray import PBIXRay
+from pbixray.vertipaq_decoder import VertiPaqDecoder
+
+
+def patch_pbixray_datetime_handling() -> None:
+    original = VertiPaqDecoder._handle_special_cases
+
+    def patched(self: VertiPaqDecoder, column_data: Any, data_type: int) -> Any:
+        if data_type == 9:
+          # pandas 3 rejects the deprecated lowercase day unit used in pbixray 0.5.0.
+            return pd.to_datetime(column_data, unit="D", origin="1899-12-30")
+        if data_type == 10:
+            return column_data.apply(lambda value: Decimal(value) / 10000 if pd.notnull(value) else None)
+        return original(self, column_data, data_type)
+
+    VertiPaqDecoder._handle_special_cases = patched
 
 
 def parse_args() -> argparse.Namespace:
@@ -119,6 +136,7 @@ def main() -> int:
 
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    patch_pbixray_datetime_handling()
     model = PBIXRay(str(pbix_path))
     layout = read_report_layout(pbix_path)
     schema_records = dataframe_records(model.schema)

@@ -19,4 +19,19 @@ class User < ApplicationRecord
   def member?
     role == "member"
   end
+
+  def chairperson_manager?(date = Date.current)
+    member&.member_office_assignments&.effective_on(date)&.where(office_type: "chairperson")&.exists? || false
+  end
+
+  def can_manage_club?(date = Date.current)
+    admin? || chairperson_manager?(date)
+  end
+
+  def management_access_label(date = Date.current)
+    return "Admin" if admin?
+    return "Chairperson" if chairperson_manager?(date)
+
+    "Member"
+  end
 end

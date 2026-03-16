@@ -6,98 +6,160 @@
   </p>
 </section>
 
-<section class="metrics">
-  <article class="metric-card">
-    <span class="muted">Total members</span>
-    <strong><%= @summary[:total] %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Active</span>
-    <strong><%= @summary[:active] %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Inactive</span>
-    <strong><%= @summary[:inactive] %></strong>
-  </article>
-</section>
-
-<section class="panel">
-  <div class="results-header">
-    <div>
-      <h2>Find members</h2>
-      <p class="muted">Search by name, email, department, role, or location.</p>
-    </div>
-    <%= link_to "New member", new_admin_member_path, class: "button-link" %>
-  </div>
-
-  <%= form_with url: admin_members_path, method: :get, local: true do |form| %>
-    <div class="filters">
-      <div class="field">
-        <%= form.label :q, "Search" %>
-        <%= form.text_field :q, value: @filters[:q], placeholder: "Hannah, forecast, 분당..." %>
+<section class="ops-layout member-ops-layout">
+  <aside class="ops-sidebar">
+    <section class="panel stack">
+      <div class="section-title">
+        <div>
+          <h2>Find members</h2>
+          <p class="muted">Search by name, email, department, role, or location.</p>
+        </div>
+        <%= link_to "New member", new_admin_member_path, class: "button-link" %>
       </div>
 
-      <div class="field">
-        <%= form.label :active, "Status" %>
-        <%= form.select :active, options_for_select([["All", ""], ["Active", "active"], ["Inactive", "inactive"]], @filters[:active]) %>
-      </div>
+      <%= form_with url: admin_members_path, method: :get, local: true do |form| %>
+        <div class="field-stack">
+          <%= form.label :q, "Search" %>
+          <%= form.text_field :q, value: @filters[:q], placeholder: "Hannah, forecast, 분당..." %>
+        </div>
 
-      <div class="field">
-        <%= form.label :role, "Role" %>
-        <%= form.select :role, options_for_select([["All", ""]] + @role_options.map { |value| [value, value] }, @filters[:role]) %>
-      </div>
+        <div class="field-stack">
+          <%= form.label :active, "Status" %>
+          <%= form.select :active, options_for_select([["All", ""], ["Active", "active"], ["Inactive", "inactive"]], @filters[:active]) %>
+        </div>
 
-      <div class="field">
-        <%= form.label :location, "Location" %>
-        <%= form.select :location, options_for_select([["All", ""]] + @location_options.map { |value| [value, value] }, @filters[:location]) %>
-      </div>
-    </div>
+        <div class="field-stack">
+          <%= form.label :role, "Role" %>
+          <%= form.select :role, options_for_select([["All", ""]] + @role_options.map { |value| [value, value] }, @filters[:role]) %>
+        </div>
 
-    <div class="button-row">
-      <%= form.submit "Apply filters" %>
-      <%= link_to "Reset", admin_members_path, class: "button-link secondary" %>
-    </div>
-  <% end %>
-</section>
+        <div class="field-stack">
+          <%= form.label :location, "Location" %>
+          <%= form.select :location, options_for_select([["All", ""]] + @location_options.map { |value| [value, value] }, @filters[:location]) %>
+        </div>
 
-<section class="panel">
-  <div class="results-header">
-    <h2>Results</h2>
-    <p class="muted"><%= pluralize(@members.size, "member") %> shown</p>
-  </div>
-
-  <% if @members.any? %>
-    <div class="member-grid">
-      <% @members.each do |member| %>
-        <article class="member-card">
-          <div class="results-header">
-            <div>
-              <h3><%= link_to member.english_name, admin_member_path(member) %></h3>
-              <p class="muted"><%= member.korean_name.presence || "No Korean name" %></p>
-            </div>
-            <span class="pill <%= member.active? ? "active" : "inactive" %>"><%= member.active? ? "Active" : "Inactive" %></span>
-          </div>
-
-          <div class="pill-row">
-            <span class="pill"><%= member.member_role %></span>
-            <span class="pill"><%= member.location.presence || "No location" %></span>
-          </div>
-
-          <p class="muted"><%= member.department.presence || "No department" %></p>
-
-          <div class="meta-list">
-            <div><span>Email</span><span><%= member.email.presence || "Not set" %></span></div>
-            <div><span>Attendance rows</span><span><%= member.meeting_attendances.size %></span></div>
-            <div><span>Book requests</span><span><%= member.book_requests.size %></span></div>
-            <div><span>Linked user</span><span><%= member.user&.email || "None" %></span></div>
-          </div>
-        </article>
+        <div class="button-row">
+          <%= form.submit "Apply filters" %>
+          <%= link_to "Reset", admin_members_path, class: "button-link secondary" %>
+        </div>
       <% end %>
-    </div>
-  <% else %>
-    <div class="empty-state">
-      <h3>No members matched these filters.</h3>
-      <p>Adjust the search terms or create a new member record.</p>
-    </div>
-  <% end %>
+    </section>
+
+    <section class="metrics ops-metrics">
+      <article class="metric-card">
+        <span class="muted">Total members</span>
+        <strong><%= @summary[:total] %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Active</span>
+        <strong><%= @summary[:active] %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Inactive</span>
+        <strong><%= @summary[:inactive] %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Linked access</span>
+        <strong><%= @summary[:linked_access] %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Managers</span>
+        <strong><%= @summary[:managers] %></strong>
+      </article>
+    </section>
+  </aside>
+
+  <main class="ops-main">
+    <section class="panel stack">
+      <div class="results-header">
+        <div>
+          <h2>Results</h2>
+          <p class="muted"><%= pluralize(@members.size, "member") %> shown</p>
+        </div>
+        <p class="muted">Dense operations grid for desktop administration.</p>
+      </div>
+
+      <% if @members.any? %>
+        <div class="report-table-wrap member-ops-table-wrap">
+          <table class="data-table member-ops-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Role / office</th>
+                <th>Access</th>
+                <th>Activity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @members.each do |member| %>
+                <% current_offices = member.office_labels_on(Date.current) %>
+                <% linked_user = member.user %>
+                <tr>
+                  <td>
+                    <div class="member-primary">
+                      <strong><%= link_to member.english_name, admin_member_path(member) %></strong>
+                      <span class="pill <%= member.active? ? "active" : "inactive" %>"><%= member.active? ? "Active" : "Inactive" %></span>
+                    </div>
+                    <div class="member-subline">
+                      <span><%= member.korean_name.presence || "No Korean name" %></span>
+                      <span><%= member.department.presence || "No department" %></span>
+                    </div>
+                    <div class="member-subline">
+                      <span><%= member.email.presence || "No email" %></span>
+                      <span><%= member.location.presence || "No location" %></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="table-pills">
+                      <span class="pill"><%= member.member_role %></span>
+                      <% if member.location.present? %>
+                        <span class="location-pill tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(member.location, "neutral") %>"><%= member.location %></span>
+                      <% end %>
+                      <% current_offices.each do |label| %>
+                        <span class="pill"><%= label %></span>
+                      <% end %>
+                    </div>
+                    <p class="muted table-note">
+                      <%= current_offices.any? ? "#{current_offices.size} active office assignment(s)" : "No active office assignment" %>
+                    </p>
+                  </td>
+                  <td>
+                    <div class="table-access">
+                      <strong><%= linked_user&.management_access_label || "No account" %></strong>
+                      <span><%= linked_user&.email || "No linked sign-in" %></span>
+                      <span><%= linked_user ? "App role: #{linked_user.role}" : "Open member detail to create access" %></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="table-activity">
+                      <span>Attendances <strong><%= member.meeting_attendances.size %></strong></span>
+                      <span>Books <strong><%= member.book_requests.size %></strong></span>
+                      <span>Meetings <strong><%= member.meetings.distinct.size %></strong></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="action-cluster">
+                      <%= link_to "View", admin_member_path(member), class: "button-link secondary compact-button" %>
+                      <%= link_to "Edit", edit_admin_member_path(member), class: "button-link secondary compact-button" %>
+                      <% if member.active? %>
+                        <%= button_to "Inactive", deactivate_admin_member_path(member), method: :patch, class: "danger compact-button" %>
+                      <% else %>
+                        <%= button_to "Reactivate", reactivate_admin_member_path(member), method: :patch, class: "warn compact-button" %>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No members matched these filters.</h3>
+          <p>Adjust the search terms or create a new member record.</p>
+        </div>
+      <% end %>
+    </section>
+  </main>
 </section>

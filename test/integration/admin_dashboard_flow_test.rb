@@ -2,12 +2,13 @@ require "test_helper"
 
 class AdminDashboardFlowTest < ActionDispatch::IntegrationTest
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [MeetingPhoto, MeetingAttendance, Meeting, MemberOfficeAssignment, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     @member = Member.create!(english_name: "Hannah Lee", member_role: "정회원", active: true)
     @leader = Member.create!(english_name: "Gerald Park", member_role: "Lead", active: true)
     @guest = Member.create!(english_name: "Blake Jung", member_role: "정회원", active: true)
+    @leader.member_office_assignments.create!(office_type: "site_leader", location: "분당", effective_from: @period.start_date)
     ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)
     ReservePolicy.create!(member_role: "Lead", attendance_points: 10000, effective_from: @period.start_date, effective_to: @period.end_date)
 
@@ -41,6 +42,7 @@ class AdminDashboardFlowTest < ActionDispatch::IntegrationTest
     assert_match "천안", response.body
     assert_match "Readers actually finished the review memo this time.", response.body
     assert_match "\u20a95,000", response.body
+    assert_match "\u20a910,000", response.body
   end
 
   test "dashboard can be filtered by month" do

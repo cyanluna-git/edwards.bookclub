@@ -11,4 +11,15 @@ namespace :bookclub do
     puts "Cutover readiness: #{report[:cutover_ready] ? 'yes' : 'no'}"
     puts "Blockers: #{report[:blockers].presence&.join(', ') || 'none'}"
   end
+
+  desc "Generate a reserve-history reconciliation report"
+  task reconcile_history: :environment do
+    report = Reconciliation::HistoricalReserveReporter.new(
+      report_path: ENV["REPORT_PATH"].presence || Reconciliation::HistoricalReserveReporter::DEFAULT_REPORT_PATH
+    ).call
+
+    puts "Historical reserve report written to #{report[:report_path]}"
+    puts "Cutover readiness: #{report[:cutover_ready] ? 'yes' : 'no'}"
+    puts "Blockers: #{report[:blockers].presence&.join(', ') || 'none'}"
+  end
 end

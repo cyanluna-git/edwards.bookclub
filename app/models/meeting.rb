@@ -6,6 +6,8 @@ class Meeting < ApplicationRecord
   has_many :members, through: :meeting_attendances
   has_many :meeting_photos, dependent: :delete_all
 
+  after_commit :refresh_attendance_awards_for_meeting_date_change, if: :saved_change_to_meeting_at?
+
   normalizes :title, :legacy_title, :location, with: ->(value) { value&.strip }
 
   scope :ordered_recent, -> { order(meeting_at: :desc, id: :desc) }
@@ -16,5 +18,14 @@ class Meeting < ApplicationRecord
 
   def attendance_count
     meeting_attendances.size
+  end
+
+  private
+
+  def refresh_attendance_awards_for_meeting_date_change
+    meeting_attendances.includes(:member).find_each do |attendance|
+      attendance.refresh_award_snapshot(force: true)
+      attendance.save! if attendance.changed?
+    end
   end
 end

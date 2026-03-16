@@ -20,7 +20,7 @@ module Imports
           email: normalize_text(row["email"]),
           member_role: normalize_text(row["Role"]) || "정회원",
           location: normalize_text(row["Location"]),
-          active: true
+          active: !withdrawn_role?(row["Role"])
         )
 
         if member.save
@@ -31,6 +31,12 @@ module Imports
       end
 
       result
+    end
+
+    private
+
+    def withdrawn_role?(raw_role)
+      normalize_text(raw_role).to_s.include?("탈퇴")
     end
   end
 end

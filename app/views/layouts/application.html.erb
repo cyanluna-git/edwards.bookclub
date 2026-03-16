@@ -30,7 +30,8 @@
         <% if authenticated? %>
           <nav class="topbar-nav">
             <%= link_to "Home", root_path, class: "secondary" %>
-            <% if current_user.admin? %>
+            <%= link_to "Reports", reports_path, class: "secondary" %>
+            <% if can_manage_club? %>
               <%= link_to "Admin", admin_dashboard_path, class: "secondary" %>
               <%= link_to "Members", admin_members_path, class: "secondary" %>
               <%= link_to "Meetings", admin_meetings_path, class: "secondary" %>

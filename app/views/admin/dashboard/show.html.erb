@@ -1,68 +1,76 @@
-<section class="hero dashboard-hero">
-  <p class="eyebrow">Admin Dashboard</p>
-  <h1>Book club reporting room</h1>
-  <p class="hero-copy">
-    PBIX-style reserve standings, month-by-month attendance, meeting photos, and readable review notes from the Rails data model.
-  </p>
-</section>
+<section class="dashboard-layout">
+  <aside class="dashboard-sidebar">
+    <section class="hero dashboard-hero">
+      <p class="eyebrow"><%= can_manage_club? ? "Admin Dashboard" : "Club Reports" %></p>
+      <h1>Book club reporting room</h1>
+      <p class="hero-copy">
+        PBIX-style reserve standings, month-by-month attendance, meeting photos, and readable review notes from the Rails data model.
+      </p>
+    </section>
 
-<section class="panel stack dashboard-filter-panel">
-  <div class="section-title">
-    <div>
-      <h2>Report scope</h2>
-      <p class="muted">Reserve figures stay fiscal-period scoped. Attendance records, photos, and reviews follow the selected month.</p>
-    </div>
-    <div class="button-row">
-      <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
-      <%= link_to "Meetings", admin_meetings_path, class: "button-link secondary" %>
-      <%= link_to "Books", admin_book_requests_path, class: "button-link secondary" %>
-      <%= link_to "Settings", admin_fiscal_periods_path, class: "button-link secondary" %>
-    </div>
-  </div>
-
-  <%= form_with url: admin_dashboard_path, method: :get, local: true do |form| %>
-    <div class="filters">
-      <div class="field">
-        <%= form.label :fiscal_period_id, "Fiscal period" %>
-        <%= form.select :fiscal_period_id, options_for_select([["Active/default", ""]] + @fiscal_period_options.map { |period| [period.name, period.id] }, @filters[:fiscal_period_id]) %>
+    <section class="panel stack dashboard-filter-panel">
+      <div class="section-title sidebar-title">
+        <div>
+          <h2>Report scope</h2>
+          <p class="muted">Reserve figures stay fiscal-period scoped. Attendance records, photos, and reviews follow the selected month.</p>
+        </div>
       </div>
-      <div class="field">
-        <%= form.label :month, "Attendance month" %>
-        <%= form.month_field :month, value: @filters[:month] %>
+
+      <div class="button-row sidebar-actions">
+        <% if can_manage_club? %>
+          <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
+          <%= link_to "Meetings", admin_meetings_path, class: "button-link secondary" %>
+          <%= link_to "Books", admin_book_requests_path, class: "button-link secondary" %>
+          <%= link_to "Settings", admin_fiscal_periods_path, class: "button-link secondary" %>
+        <% else %>
+          <%= link_to "My Portal", member_root_path, class: "button-link secondary" %>
+          <%= link_to "My Requests", member_book_requests_path, class: "button-link secondary" %>
+        <% end %>
       </div>
-    </div>
-    <div class="button-row">
-      <%= form.submit "Apply filters" %>
-      <%= link_to "Reset", admin_dashboard_path, class: "button-link secondary" %>
-    </div>
-  <% end %>
-</section>
 
-<section class="metrics dashboard-metrics">
-  <article class="metric-card">
-    <span class="muted">Fiscal period</span>
-    <strong><%= @dashboard.fiscal_period&.name || "None" %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Reserve balance</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.balance, unit: "₩", precision: 0) %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Attendance reserve</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.attendance_reserve_total, unit: "₩", precision: 0) %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Book orders</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.purchased_book_total, unit: "₩", precision: 0) %></strong>
-  </article>
-  <article class="metric-card">
-    <span class="muted">Additional payments</span>
-    <strong><%= number_to_currency(@dashboard.reserve_snapshot.additional_payment_total, unit: "₩", precision: 0) %></strong>
-  </article>
-</section>
+      <%= form_with url: @dashboard_path, method: :get, local: true do |form| %>
+        <div class="field-stack">
+          <%= form.label :fiscal_period_id, "Fiscal period" %>
+          <%= form.select :fiscal_period_id, options_for_select([["Active/default", ""]] + @fiscal_period_options.map { |period| [period.name, period.id] }, @filters[:fiscal_period_id]) %>
+        </div>
+        <div class="field-stack">
+          <%= form.label :month, "Attendance month" %>
+          <%= form.month_field :month, value: @filters[:month] %>
+        </div>
+        <div class="button-row">
+          <%= form.submit "Apply filters" %>
+          <%= link_to "Reset", @dashboard_path, class: "button-link secondary" %>
+        </div>
+      <% end %>
+    </section>
 
-<section class="detail-grid dashboard-report-grid">
-  <article class="panel stack reserve-composition">
+    <section class="metrics dashboard-metrics dashboard-sidebar-metrics">
+      <article class="metric-card">
+        <span class="muted">Fiscal period</span>
+        <strong><%= @dashboard.fiscal_period&.name || "None" %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Reserve balance</span>
+        <strong><%= number_to_currency(@dashboard.reserve_snapshot.balance, unit: "₩", precision: 0) %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Attendance reserve</span>
+        <strong><%= number_to_currency(@dashboard.reserve_snapshot.attendance_reserve_total, unit: "₩", precision: 0) %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Book orders</span>
+        <strong><%= number_to_currency(@dashboard.reserve_snapshot.purchased_book_total, unit: "₩", precision: 0) %></strong>
+      </article>
+      <article class="metric-card">
+        <span class="muted">Additional payments</span>
+        <strong><%= number_to_currency(@dashboard.reserve_snapshot.additional_payment_total, unit: "₩", precision: 0) %></strong>
+      </article>
+    </section>
+  </aside>
+
+  <main class="dashboard-main">
+    <section class="detail-grid dashboard-report-grid">
+      <article class="panel stack reserve-composition">
     <div class="section-title">
       <div>
         <h2>Reserve leaderboard</h2>
@@ -137,17 +145,17 @@
         <% end %>
       </div>
     </div>
-  </article>
-</section>
+      </article>
+    </section>
 
-<section class="panel stack attendance-composition">
-  <div class="section-title">
-    <div>
-      <h2>Attendance report</h2>
-      <p class="muted">Monthly attendance trend, selected-month breakdown, meeting register, and photo digest.</p>
-    </div>
-    <p class="muted"><%= @dashboard.month_label %></p>
-  </div>
+    <section class="panel stack attendance-composition">
+      <div class="section-title">
+        <div>
+          <h2>Attendance report</h2>
+          <p class="muted">Monthly attendance trend, selected-month breakdown, meeting register, and photo digest laid out for widescreen reading.</p>
+        </div>
+        <p class="muted"><%= @dashboard.month_label %></p>
+      </div>
 
   <div class="metrics inline-metrics">
     <article class="metric-card">
@@ -229,36 +237,42 @@
     <div class="panel report-panel stack">
       <div class="section-title">
         <h3>Meeting register</h3>
-        <span class="muted"><%= @dashboard.month_label %></span>
+        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meeting") %></span>
       </div>
       <% if @dashboard.meeting_digests.any? %>
-        <div class="report-table-wrap">
-          <table class="data-table report-table meeting-report-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Date</th>
-                <th>Attendees</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @dashboard.meeting_digests.each do |digest| %>
-                <tr>
-                  <td><strong><%= link_to digest.meeting.title, admin_meeting_path(digest.meeting) %></strong></td>
-                  <td><%= l(digest.meeting.meeting_at, format: :long) %></td>
-                  <td>
-                    <div class="attendee-list">
-                      <% digest.attendees.each do |member| %>
-                        <span><%= member.display_name %></span>
-                      <% end %>
-                    </div>
-                  </td>
-                  <td><span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span></td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+        <div class="meeting-register-grid">
+          <% @dashboard.meeting_digests.each do |digest| %>
+            <article class="meeting-register-card">
+              <div class="section-title compact">
+                <div>
+                  <h4>
+                    <% if can_manage_club? %>
+                      <%= link_to digest.meeting.title, admin_meeting_path(digest.meeting) %>
+                    <% else %>
+                      <%= digest.meeting.title %>
+                    <% end %>
+                  </h4>
+                  <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
+                </div>
+                <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
+              </div>
+              <div class="meeting-register-meta">
+                <div>
+                  <span class="muted">Attendees</span>
+                  <strong><%= digest.attendance_count %></strong>
+                </div>
+                <div>
+                  <span class="muted">Photos</span>
+                  <strong><%= digest.photos.size %></strong>
+                </div>
+              </div>
+              <div class="attendee-list attendee-list-grid">
+                <% digest.attendees.each do |member| %>
+                  <span><%= member.display_name %></span>
+                <% end %>
+              </div>
+            </article>
+          <% end %>
         </div>
       <% else %>
         <div class="empty-state">
@@ -296,36 +310,38 @@
       <% end %>
     </div>
   </div>
-</section>
+    </section>
 
-<section class="panel stack reviews-panel">
-  <div class="section-title">
-    <div>
-      <h2>Meeting reviews</h2>
-      <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
-    </div>
-    <p class="muted"><%= @dashboard.month_label %></p>
-  </div>
+    <section class="panel stack reviews-panel">
+      <div class="section-title">
+        <div>
+          <h2>Meeting reviews</h2>
+          <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
+        </div>
+        <p class="muted"><%= @dashboard.month_label %></p>
+      </div>
 
-  <% if @dashboard.review_highlights.any? %>
-    <div class="review-grid">
-      <% @dashboard.review_highlights.each do |digest| %>
-        <article class="review-card">
-          <div class="section-title compact">
-            <div>
-              <h3><%= digest.meeting.title %></h3>
-              <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
-            </div>
-            <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
-          </div>
-          <p><%= simple_format(digest.meeting.review) %></p>
-        </article>
+      <% if @dashboard.review_highlights.any? %>
+        <div class="review-grid">
+          <% @dashboard.review_highlights.each do |digest| %>
+            <article class="review-card">
+              <div class="section-title compact">
+                <div>
+                  <h3><%= digest.meeting.title %></h3>
+                  <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
+                </div>
+                <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
+              </div>
+              <p><%= simple_format(digest.meeting.review) %></p>
+            </article>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <h3>No meeting reviews for this month.</h3>
+          <p>Reviews will show here when a meeting note is saved on the meeting record.</p>
+        </div>
       <% end %>
-    </div>
-  <% else %>
-    <div class="empty-state">
-      <h3>No meeting reviews for this month.</h3>
-      <p>Reviews will show here when a meeting note is saved on the meeting record.</p>
-    </div>
-  <% end %>
+    </section>
+  </main>
 </section>
