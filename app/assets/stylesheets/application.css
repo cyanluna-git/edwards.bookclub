@@ -277,6 +277,11 @@ textarea {
   align-items: start;
 }
 
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
 .member-card {
   padding: 1.2rem;
 }
@@ -340,6 +345,59 @@ textarea {
   text-align: center;
   padding: 2rem 1rem;
   color: var(--ink-soft);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.85rem 0.6rem;
+  border-top: 1px solid rgba(216, 200, 177, 0.7);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.inline-form > * {
+  flex: 1 1 180px;
+}
+
+.inline-form .inline-actions,
+.inline-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.list-clean {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.list-clean li + li {
+  margin-top: 0.4rem;
 }
 
 @media (max-width: 780px) {

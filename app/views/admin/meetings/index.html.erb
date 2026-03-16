@@ -1,0 +1,52 @@
+<section class="hero">
+  <p class="eyebrow">Admin Meetings</p>
+  <h1>Meeting operations</h1>
+  <p class="hero-copy">
+    Run attendance, review, and photo management from one meeting-centered workflow instead of separate SharePoint list edits.
+  </p>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Meetings</h2>
+      <p class="muted">Newest first, with attendance and photo counts visible at a glance.</p>
+    </div>
+    <%= link_to "New meeting", new_admin_meeting_path, class: "button-link" %>
+  </div>
+
+  <% if @meetings.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Meeting</th>
+          <th>When</th>
+          <th>Location</th>
+          <th>Attendance</th>
+          <th>Photos</th>
+          <th>Review</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @meetings.each do |meeting| %>
+          <tr>
+            <td>
+              <strong><%= link_to meeting.title, admin_meeting_path(meeting) %></strong>
+              <div class="muted"><%= meeting.fiscal_period&.name || "No fiscal period" %></div>
+            </td>
+            <td><%= l(meeting.meeting_at, format: :long) %></td>
+            <td><%= meeting.location.presence || "No location" %></td>
+            <td><%= meeting.meeting_attendances.size %></td>
+            <td><%= meeting.meeting_photos.size %></td>
+            <td><%= meeting.review.present? ? "Yes" : "No" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty-state">
+      <h3>No meetings yet.</h3>
+      <p>Create the first meeting to start managing attendance and review notes.</p>
+    </div>
+  <% end %>
+</section>

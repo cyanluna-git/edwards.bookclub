@@ -6,7 +6,15 @@ class Meeting < ApplicationRecord
   has_many :members, through: :meeting_attendances
   has_many :meeting_photos, dependent: :delete_all
 
+  normalizes :title, :legacy_title, :location, with: ->(value) { value&.strip }
+
+  scope :ordered_recent, -> { order(meeting_at: :desc, id: :desc) }
+
   validates :title, :meeting_at, presence: true
   validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
   validates :reserve_exempt_default, inclusion: { in: [true, false] }
+
+  def attendance_count
+    meeting_attendances.size
+  end
 end

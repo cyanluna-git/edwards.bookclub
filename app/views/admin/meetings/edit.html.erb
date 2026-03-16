@@ -1,0 +1,9 @@
+<section class="hero">
+  <p class="eyebrow">Admin Meetings</p>
+  <h1>Edit meeting</h1>
+  <p class="hero-copy">Update the meeting details that drive the attendance-centric operating workflow.</p>
+</section>
+
+<section class="panel">
+  <%= render "form", meeting: @meeting, submit_label: "Save meeting", fiscal_period_options: @fiscal_period_options %>
+</section>

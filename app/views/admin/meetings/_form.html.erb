@@ -1,0 +1,63 @@
+<% if meeting.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(meeting.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% meeting.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:admin, meeting], local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :title %>
+        <%= form.text_field :title, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :legacy_title, "Legacy title" %>
+        <%= form.text_field :legacy_title %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :location %>
+        <%= form.text_field :location %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :description %>
+        <%= form.text_area :description %>
+      </div>
+    </div>
+
+    <div>
+      <div class="field-stack">
+        <%= form.label :meeting_at, "Date and time" %>
+        <%= form.datetime_local_field :meeting_at, value: meeting.meeting_at&.strftime("%Y-%m-%dT%H:%M"), required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :fiscal_period_id, "Fiscal period" %>
+        <%= form.select :fiscal_period_id, options_for_select(fiscal_period_options.map { |period| [period.name, period.id] }, meeting.fiscal_period_id), include_blank: "No fiscal period" %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :reserve_exempt_default, "Default reserve behavior" %>
+        <%= form.select :reserve_exempt_default, options_for_select([["Reserve applies", false], ["Reserve exempt by default", true]], meeting.reserve_exempt_default) %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :review %>
+        <%= form.text_area :review %>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", meeting.persisted? ? admin_meeting_path(meeting) : admin_meetings_path, class: "button-link secondary" %>
+  </div>
+<% end %>

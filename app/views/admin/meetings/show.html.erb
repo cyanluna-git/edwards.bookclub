@@ -1,0 +1,200 @@
+<section class="hero">
+  <p class="eyebrow">Meeting Hub</p>
+  <h1><%= @meeting.title %></h1>
+  <p class="hero-copy">
+    One place to maintain attendance, reserve exceptions, review notes, and photo references for this meeting.
+  </p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2>Meeting summary</h2>
+        <p class="muted"><%= @meeting.location.presence || "No location recorded" %></p>
+      </div>
+      <div class="button-row">
+        <%= link_to "Edit details", edit_admin_meeting_path(@meeting), class: "button-link" %>
+        <%= button_to "Delete meeting", admin_meeting_path(@meeting), method: :delete, class: "danger" %>
+      </div>
+    </div>
+
+    <div class="meta-list">
+      <div><span>Date and time</span><span><%= l(@meeting.meeting_at, format: :long) %></span></div>
+      <div><span>Fiscal period</span><span><%= @meeting.fiscal_period&.name || "None" %></span></div>
+      <div><span>Default reserve behavior</span><span><%= @meeting.reserve_exempt_default? ? "Exempt by default" : "Reserve applies by default" %></span></div>
+      <div><span>Created by</span><span><%= @meeting.created_by&.email || "Unknown" %></span></div>
+    </div>
+
+    <% if @meeting.description.present? %>
+      <div class="field-stack">
+        <label>Description</label>
+        <div class="panel"><%= simple_format(@meeting.description) %></div>
+      </div>
+    <% end %>
+
+    <div class="field-stack">
+      <label>Review notes</label>
+      <%= form_with model: [:admin, @meeting], local: true do |form| %>
+        <%= form.text_area :review, placeholder: "Capture 후기, follow-ups, and meeting notes here." %>
+        <div class="button-row">
+          <%= form.submit "Save review" %>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Snapshot</h2>
+    <div class="stat-list">
+      <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
+      <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
+      <div><span>Photo records</span><strong><%= @photos.size %></strong></div>
+    </div>
+    <div class="button-row">
+      <%= link_to "Back to meetings", admin_meetings_path, class: "button-link secondary" %>
+    </div>
+  </aside>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Attendance</h2>
+      <p class="muted">Add attendees, mark reserve exemptions, and leave per-attendance notes.</p>
+    </div>
+  </div>
+
+  <%= form_with model: [:admin, @meeting, @attendance], url: admin_meeting_attendances_path(@meeting), local: true, class: "inline-form" do |form| %>
+    <div class="field">
+      <%= form.label :member_id, "Add attendee" %>
+      <%= form.select :member_id, options_for_select(@available_members.map { |member| ["#{member.english_name} · #{member.member_role}", member.id] }), include_blank: "Select member" %>
+    </div>
+    <div class="field">
+      <%= form.label :reserve_exempt, "Reserve exemption" %>
+      <%= form.select :reserve_exempt, options_for_select([["Reserve applies", false], ["Reserve exempt", true]], @attendance.reserve_exempt) %>
+    </div>
+    <div class="field">
+      <%= form.label :note %>
+      <%= form.text_field :note, placeholder: "Optional attendance note" %>
+    </div>
+    <div class="inline-actions">
+      <%= form.submit "Add attendee" %>
+    </div>
+  <% end %>
+
+  <% if @attendances.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Role</th>
+          <th>Reserve rule</th>
+          <th>Note</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @attendances.each do |attendance| %>
+          <tr>
+            <td><%= attendance.member.english_name %></td>
+            <td><%= attendance.member.member_role %></td>
+            <td>
+              <%= form_with model: [:admin, @meeting, attendance], url: admin_meeting_attendance_path(@meeting, attendance), method: :patch, local: true, class: "inline-form" do |form| %>
+                <div class="field">
+                  <%= form.label :reserve_exempt, "Reserve" %>
+                  <%= form.select :reserve_exempt, options_for_select([["Reserve applies", false], ["Reserve exempt", true]], attendance.reserve_exempt) %>
+                </div>
+                <div class="field">
+                  <%= form.label :note, "Attendance note" %>
+                  <%= form.text_field :note, value: attendance.note %>
+                </div>
+                <div class="inline-actions">
+                  <%= form.submit "Save" %>
+                </div>
+              <% end %>
+            </td>
+            <td><%= attendance.note.presence || "None" %></td>
+            <td>
+              <%= button_to "Remove", admin_meeting_attendance_path(@meeting, attendance), method: :delete, class: "danger" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty-state">
+      <h3>No attendees yet.</h3>
+      <p>Add the first attendee above.</p>
+    </div>
+  <% end %>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Photo records</h2>
+      <p class="muted">Keep URL or file-path references now; storage can be swapped later.</p>
+    </div>
+  </div>
+
+  <%= form_with model: [:admin, @meeting, @photo], url: admin_meeting_photos_path(@meeting), local: true, class: "inline-form" do |form| %>
+    <div class="field">
+      <%= form.label :source_url, "Source URL" %>
+      <%= form.text_field :source_url, placeholder: "https://..." %>
+    </div>
+    <div class="field">
+      <%= form.label :file_path, "File path" %>
+      <%= form.text_field :file_path, placeholder: "/uploads/meeting-1.jpg" %>
+    </div>
+    <div class="field">
+      <%= form.label :caption %>
+      <%= form.text_field :caption %>
+    </div>
+    <div class="field">
+      <%= form.label :sort_order %>
+      <%= form.number_field :sort_order, value: @photo.sort_order %>
+    </div>
+    <div class="inline-actions">
+      <%= form.submit "Add photo" %>
+    </div>
+  <% end %>
+
+  <% if @photos.any? %>
+    <div class="stack">
+      <% @photos.each do |photo| %>
+        <article class="member-card">
+          <%= form_with model: [:admin, @meeting, photo], url: admin_meeting_photo_path(@meeting, photo), method: :patch, local: true, class: "inline-form" do |form| %>
+            <div class="field">
+              <%= form.label :source_url, "Source URL" %>
+              <%= form.text_field :source_url, value: photo.source_url %>
+            </div>
+            <div class="field">
+              <%= form.label :file_path, "File path" %>
+              <%= form.text_field :file_path, value: photo.file_path %>
+            </div>
+            <div class="field">
+              <%= form.label :caption %>
+              <%= form.text_field :caption, value: photo.caption %>
+            </div>
+            <div class="field">
+              <%= form.label :sort_order %>
+              <%= form.number_field :sort_order, value: photo.sort_order %>
+            </div>
+            <div class="inline-actions">
+              <%= form.submit "Save" %>
+            </div>
+          <% end %>
+          <div class="button-row">
+            <%= button_to "Remove", admin_meeting_photo_path(@meeting, photo), method: :delete, class: "danger" %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <h3>No photo records yet.</h3>
+      <p>Add URL-backed or file-path-backed photo metadata above.</p>
+    </div>
+  <% end %>
+</section>
