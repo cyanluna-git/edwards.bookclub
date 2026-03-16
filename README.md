@@ -43,11 +43,34 @@ source script/dev-env.sh
 bundle exec bin/rails db:create db:migrate
 ```
 
+Seed the baseline data and local admin account:
+
+```bash
+source script/dev-env.sh
+bundle exec bin/rails db:seed
+```
+
 Run the test suite:
 
 ```bash
 source script/dev-env.sh
 bundle exec bin/rails test
+```
+
+Default local admin bootstrap from `db:seed`:
+
+```text
+email: admin@edwards-bookclub.local
+password: changeme123!
+```
+
+Override with:
+
+```bash
+source script/dev-env.sh
+BOOKCLUB_ADMIN_EMAIL=admin@example.com \
+BOOKCLUB_ADMIN_PASSWORD='replace-me' \
+bundle exec bin/rails db:seed
 ```
 
 Run a Rails command:

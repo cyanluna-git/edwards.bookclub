@@ -1,0 +1,19 @@
+<main>
+  <h1>Edwards Bookclub</h1>
+  <p>Signed in as <strong><%= current_user.email %></strong>.</p>
+  <p>Role: <%= current_user.role %></p>
+
+  <% if current_member %>
+    <p>Linked member: <%= current_member.english_name %></p>
+  <% else %>
+    <p>No member profile is linked yet.</p>
+  <% end %>
+
+  <% if current_user.admin? %>
+    <p><%= link_to "Open admin dashboard", admin_dashboard_path %></p>
+  <% else %>
+    <p>Member-facing features will be added on top of this authenticated baseline.</p>
+  <% end %>
+
+  <p><%= button_to "Sign out", destroy_session_path, method: :delete %></p>
+</main>

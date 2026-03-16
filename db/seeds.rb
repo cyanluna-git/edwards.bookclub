@@ -25,3 +25,12 @@ end
     policy.effective_to = active_period.end_date
   end
 end
+
+admin_email = ENV.fetch("BOOKCLUB_ADMIN_EMAIL", "admin@edwards-bookclub.local")
+admin_password = ENV.fetch("BOOKCLUB_ADMIN_PASSWORD", "changeme123!")
+
+User.find_or_create_by!(email: admin_email) do |user|
+  user.role = "admin"
+  user.password = admin_password
+  user.password_confirmation = admin_password
+end
