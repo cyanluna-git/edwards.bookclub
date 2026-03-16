@@ -1,0 +1,9 @@
+<section class="hero">
+  <p class="eyebrow">Admin Books</p>
+  <h1>New book request</h1>
+  <p class="hero-copy">Create a request record that will remain usable for reserve and spending operations.</p>
+</section>
+
+<section class="panel">
+  <%= render "form", book_request: @book_request, member_options: @member_options, status_options: @status_options, fiscal_period_options: @fiscal_period_options, submit_label: "Create request" %>
+</section>

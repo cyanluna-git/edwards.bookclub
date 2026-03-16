@@ -19,6 +19,8 @@ Rails.application.routes.draw do
       resources :attendances, controller: "meeting_attendances", only: %i[create update destroy]
       resources :photos, controller: "meeting_photos", only: %i[create update destroy]
     end
+
+    resources :book_requests
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

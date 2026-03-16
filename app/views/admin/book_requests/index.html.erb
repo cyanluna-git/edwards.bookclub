@@ -1,0 +1,131 @@
+<section class="hero">
+  <p class="eyebrow">Admin Books</p>
+  <h1>Book requests and reserves</h1>
+  <p class="hero-copy">
+    Manage purchase requests and additional payments while keeping the current fiscal-period reserve balance in view.
+  </p>
+</section>
+
+<section class="metrics">
+  <article class="metric-card">
+    <span class="muted">Filtered requests</span>
+    <strong><%= @list_summary[:count] %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Filtered spend</span>
+    <strong><%= number_to_currency(@list_summary[:total_price], unit: "KRW ", precision: 0) %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Additional payments</span>
+    <strong><%= number_to_currency(@list_summary[:total_additional_payment], unit: "KRW ", precision: 0) %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Reserve balance</span>
+    <strong><%= number_to_currency(@reserve_snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+  </article>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2>Filters</h2>
+        <p class="muted">Search by title, author, publisher, comment, status, or requesting member.</p>
+      </div>
+      <%= link_to "New request", new_admin_book_request_path, class: "button-link" %>
+    </div>
+
+    <%= form_with url: admin_book_requests_path, method: :get, local: true do |form| %>
+      <div class="filters">
+        <div class="field">
+          <%= form.label :q, "Search" %>
+          <%= form.text_field :q, value: @filters[:q], placeholder: "systems, Hannah, Approved..." %>
+        </div>
+        <div class="field">
+          <%= form.label :member_id, "Member" %>
+          <%= form.select :member_id, options_for_select([["All", ""]] + @member_options.map { |member| [member.english_name, member.id] }, @filters[:member_id]) %>
+        </div>
+        <div class="field">
+          <%= form.label :request_status, "Status" %>
+          <%= form.select :request_status, options_for_select([["All", ""]] + @status_options.map { |status| [status, status] }, @filters[:request_status]) %>
+        </div>
+        <div class="field">
+          <%= form.label :fiscal_period_id, "Fiscal period" %>
+          <%= form.select :fiscal_period_id, options_for_select([["All", ""]] + @fiscal_period_options.map { |period| [period.name, period.id] }, @filters[:fiscal_period_id]) %>
+        </div>
+        <div class="field">
+          <%= form.label :requested_from, "Requested from" %>
+          <%= form.date_field :requested_from, value: @filters[:requested_from] %>
+        </div>
+        <div class="field">
+          <%= form.label :requested_to, "Requested to" %>
+          <%= form.date_field :requested_to, value: @filters[:requested_to] %>
+        </div>
+      </div>
+      <div class="button-row">
+        <%= form.submit "Apply filters" %>
+        <%= link_to "Reset", admin_book_requests_path, class: "button-link secondary" %>
+      </div>
+    <% end %>
+  </article>
+
+  <aside class="panel stack">
+    <h2>Reserve snapshot</h2>
+    <% if @reserve_snapshot.fiscal_period %>
+      <p class="muted">Based on <strong><%= @reserve_snapshot.fiscal_period.name %></strong>.</p>
+      <div class="stat-list">
+        <div><span>Attendance reserve total</span><strong><%= number_to_currency(@reserve_snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Purchased book total</span><strong><%= number_to_currency(@reserve_snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Additional payment total</span><strong><%= number_to_currency(@reserve_snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Attendance count</span><strong><%= @reserve_snapshot.attendance_count %></strong></div>
+      </div>
+      <p class="muted">Balance = reserves - purchased books + additional payments.</p>
+    <% else %>
+      <p class="muted">No fiscal period is available yet for reserve calculations.</p>
+    <% end %>
+  </aside>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <h2>Requests</h2>
+    <p class="muted"><%= pluralize(@book_requests.size, "request") %> shown</p>
+  </div>
+
+  <% if @book_requests.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Book</th>
+          <th>Member</th>
+          <th>Status</th>
+          <th>Requested</th>
+          <th>Price</th>
+          <th>Additional</th>
+          <th>Net effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @book_requests.each do |request| %>
+          <tr>
+            <td>
+              <strong><%= link_to request.title, admin_book_request_path(request) %></strong>
+              <div class="muted"><%= [request.author, request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
+            </td>
+            <td><%= request.member&.english_name || "Unlinked" %></td>
+            <td><span class="pill"><%= request.request_status.presence || "No status" %></span></td>
+            <td><%= request.requested_on&.iso8601 || "Not set" %></td>
+            <td><%= number_to_currency(request.price, unit: "KRW ", precision: 0) if request.price %></td>
+            <td><%= number_to_currency(request.additional_payment, unit: "KRW ", precision: 0) if request.additional_payment %></td>
+            <td><%= number_to_currency(request.net_cash_effect, unit: "KRW ", precision: 0) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty-state">
+      <h3>No requests matched the current filters.</h3>
+      <p>Adjust the filters or create a new request.</p>
+    </div>
+  <% end %>
+</section>

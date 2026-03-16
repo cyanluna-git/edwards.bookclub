@@ -34,6 +34,7 @@
               <%= link_to "Admin", admin_dashboard_path, class: "secondary" %>
               <%= link_to "Members", admin_members_path, class: "secondary" %>
               <%= link_to "Meetings", admin_meetings_path, class: "secondary" %>
+              <%= link_to "Books", admin_book_requests_path, class: "secondary" %>
             <% end %>
             <span><%= current_user.email %></span>
             <%= button_to "Sign out", destroy_session_path, method: :delete, form: { data: { turbo: false } }, class: "secondary" %>

@@ -1,0 +1,81 @@
+<% if book_request.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(book_request.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% book_request.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: [:admin, book_request], local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :title %>
+        <%= form.text_field :title, required: true %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :author %>
+        <%= form.text_field :author %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :publisher %>
+        <%= form.text_field :publisher %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :comment %>
+        <%= form.text_area :comment %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :link_url, "Purchase link" %>
+        <%= form.text_field :link_url %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :cover_url, "Cover link" %>
+        <%= form.text_field :cover_url %>
+      </div>
+    </div>
+    <div>
+      <div class="field-stack">
+        <%= form.label :member_id, "Requesting member" %>
+        <%= form.select :member_id, options_for_select([["Unlinked", ""]] + member_options.map { |member| [member.english_name, member.id] }, book_request.member_id) %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :fiscal_period_id, "Fiscal period" %>
+        <%= form.select :fiscal_period_id, options_for_select([["None", ""]] + fiscal_period_options.map { |period| [period.name, period.id] }, book_request.fiscal_period_id) %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :request_status, "Status" %>
+        <%= form.text_field :request_status, list: "book-request-status-options" %>
+        <datalist id="book-request-status-options">
+          <% status_options.each do |status| %>
+            <option value="<%= status %>">
+          <% end %>
+        </datalist>
+      </div>
+      <div class="field-stack">
+        <%= form.label :requested_on, "Requested on" %>
+        <%= form.date_field :requested_on %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :rating %>
+        <%= form.text_field :rating %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :price, "Purchase value" %>
+        <%= form.number_field :price, step: "1", min: 0 %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :additional_payment %>
+        <%= form.number_field :additional_payment, step: "1", min: 0 %>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-row">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", book_request.persisted? ? admin_book_request_path(book_request) : admin_book_requests_path, class: "button-link secondary" %>
+  </div>
+<% end %>

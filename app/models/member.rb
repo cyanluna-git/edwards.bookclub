@@ -58,6 +58,13 @@ class Member < ApplicationRecord
     member_role.to_s.include?("Lead")
   end
 
+  def reserve_policy_role
+    return member_role if ReservePolicy.exists?(member_role:)
+    return "Lead" if leader_role?
+
+    "정회원"
+  end
+
   def display_name
     korean_name.presence || english_name
   end
