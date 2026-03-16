@@ -25,4 +25,3 @@
 - The current migration baseline is sufficient to continue Rails feature development.
 - The imported data is not yet ready for cutover because one or more blocker mismatches remain.
 - Current mismatches are expected where the repo uses fixture SharePoint CSVs instead of the full live exports.
-

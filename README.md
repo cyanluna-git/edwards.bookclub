@@ -117,6 +117,15 @@ source script/dev-env.sh
 bundle exec bin/rake bookclub:reconcile
 ```
 
+## Operations
+
+Deployment, backup, restore, and cutover guidance lives in:
+
+- `ops/runbook.md`
+- `script/backup-production.sh`
+- `script/restore-production.sh`
+- `script/cutover-dry-run.sh`
+
 ## Current migration direction
 
 - Application stack: Rails
