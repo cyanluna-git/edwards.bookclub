@@ -2,6 +2,7 @@ module Admin
   class BookRequestsController < BaseController
     before_action :set_book_request, only: %i[show edit update]
     before_action :load_options, only: %i[index show new create edit update]
+    before_action :prepare_aladin_lookup, only: %i[new create edit update]
 
     def index
       @filters = filter_params
@@ -23,6 +24,7 @@ module Admin
         requested_on: Date.current,
         request_status: BookRequest.status_options.first
       )
+      apply_prefill(@book_request)
     end
 
     def create
@@ -36,6 +38,7 @@ module Admin
     end
 
     def edit
+      apply_prefill(@book_request)
     end
 
     def update
@@ -56,6 +59,22 @@ module Admin
       @member_options = Member.ordered
       @status_options = BookRequest.status_options
       @fiscal_period_options = FiscalPeriod.active_first
+    end
+
+    def prepare_aladin_lookup
+      @aladin_query = params[:aladin_query].to_s.strip
+      @aladin_lookup = Integrations::Aladin::BookSearch.call(query: @aladin_query)
+      @aladin_search_path = if action_name == "edit" || params[:id].present?
+        edit_admin_book_request_path(params[:id] || @book_request)
+      else
+        new_admin_book_request_path
+      end
+    end
+
+    def apply_prefill(book_request)
+      return if prefill_params.blank?
+
+      book_request.assign_attributes(prefill_params.to_h)
     end
 
     def filter_params
@@ -86,6 +105,10 @@ module Admin
         :additional_payment,
         :fiscal_period_id
       )
+    end
+
+    def prefill_params
+      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :cover_url, :link_url)
     end
   end
 end

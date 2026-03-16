@@ -9,6 +9,8 @@
   </div>
 <% end %>
 
+<%= render "shared/aladin_lookup", lookup: @aladin_lookup, search_path: @aladin_search_path %>
+
 <%= form_with model: [:admin, book_request], local: true do |form| %>
   <div class="detail-grid">
     <div>

@@ -66,6 +66,48 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     assert_equal "Requested", created.request_status
   end
 
+  test "member can search aladin and prefill their request form" do
+    sign_in_as(@member_user)
+
+    lookup = Integrations::Aladin::BookSearch::Result.new(
+      enabled: true,
+      query: "Deep Work",
+      items: [
+        Integrations::Aladin::BookSearch::Item.new(
+          title: "Deep Work",
+          author: "Cal Newport",
+          publisher: "Grand Central",
+          cover_url: "https://example.com/deep-work.jpg",
+          link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=2"
+        )
+      ],
+      error_message: nil
+    )
+
+    with_aladin_lookup(lookup) do
+      get new_member_book_request_path, params: { aladin_query: "Deep Work" }
+    end
+
+    assert_response :success
+    assert_match "Search Aladin", response.body
+    assert_match "Deep Work", response.body
+
+    get new_member_book_request_path, params: {
+      prefill: {
+        title: "Deep Work",
+        author: "Cal Newport",
+        publisher: "Grand Central",
+        cover_url: "https://example.com/deep-work.jpg",
+        link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=2"
+      }
+    }
+
+    assert_response :success
+    assert_match 'value="Deep Work"', response.body
+    assert_match 'value="Cal Newport"', response.body
+    assert_match 'value="Grand Central"', response.body
+  end
+
   test "member cannot access another members request" do
     sign_in_as(@member_user)
 
@@ -100,5 +142,13 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
   def sign_in_as(user)
     post session_path, params: { email: user.email, password: "secret123" }
     follow_redirect!
+  end
+
+  def with_aladin_lookup(result)
+    original = Integrations::Aladin::BookSearch.method(:call)
+    Integrations::Aladin::BookSearch.define_singleton_method(:call) { |**| result }
+    yield
+  ensure
+    Integrations::Aladin::BookSearch.define_singleton_method(:call) { |**kwargs| original.call(**kwargs) }
   end
 end

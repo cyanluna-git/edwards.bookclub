@@ -2,6 +2,7 @@ module MemberPortal
   class BookRequestsController < BaseController
     before_action :require_linked_member!
     before_action :set_book_request, only: %i[show edit update]
+    before_action :prepare_aladin_lookup, only: %i[new create edit update]
 
     def index
       @book_requests = current_member.book_requests.ordered_recent.includes(:fiscal_period)
@@ -16,6 +17,7 @@ module MemberPortal
         requested_on: Date.current,
         request_status: "Requested"
       )
+      apply_prefill(@book_request)
     end
 
     def create
@@ -30,6 +32,7 @@ module MemberPortal
     end
 
     def edit
+      apply_prefill(@book_request)
     end
 
     def update
@@ -52,6 +55,22 @@ module MemberPortal
       @book_request = current_member.book_requests.includes(:fiscal_period).find(params[:id])
     end
 
+    def prepare_aladin_lookup
+      @aladin_query = params[:aladin_query].to_s.strip
+      @aladin_lookup = Integrations::Aladin::BookSearch.call(query: @aladin_query)
+      @aladin_search_path = if action_name == "edit" || params[:id].present?
+        edit_member_book_request_path(params[:id] || @book_request)
+      else
+        new_member_book_request_path
+      end
+    end
+
+    def apply_prefill(book_request)
+      return if prefill_params.blank?
+
+      book_request.assign_attributes(prefill_params.to_h)
+    end
+
     def member_book_request_params
       params.require(:book_request).permit(
         :title,
@@ -64,6 +83,10 @@ module MemberPortal
         :requested_on,
         :fiscal_period_id
       )
+    end
+
+    def prefill_params
+      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :cover_url, :link_url)
     end
   end
 end

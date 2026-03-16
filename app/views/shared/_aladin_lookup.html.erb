@@ -1,0 +1,76 @@
+<section class="panel stack lookup-panel">
+  <div class="section-title">
+    <div>
+      <h2>Search Aladin</h2>
+      <p class="muted">Use the official Aladin API to prefill title, author, publisher, cover, and purchase link fields.</p>
+    </div>
+    <span class="pill"><%= lookup.enabled? ? "API ready" : "Manual only" %></span>
+  </div>
+
+  <% if lookup.enabled? %>
+    <%= form_with url: search_path, method: :get, local: true do |form| %>
+      <div class="inline-form">
+        <div class="field">
+          <%= form.label :aladin_query, "Keyword" %>
+          <%= form.text_field :aladin_query, value: lookup.query, placeholder: "Atomic Habits, 시스템 사고..." %>
+        </div>
+        <div class="inline-actions">
+          <%= form.submit "Search Aladin" %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if lookup.error_message.present? %>
+      <div class="errors">
+        <h3>Aladin lookup issue</h3>
+        <p><%= lookup.error_message %></p>
+      </div>
+    <% elsif lookup.query.present? && lookup.items.empty? %>
+      <div class="empty-state">
+        <h3>No matching books found.</h3>
+        <p>Try a broader keyword or keep using the manual request form below.</p>
+      </div>
+    <% elsif lookup.items.any? %>
+      <div class="lookup-results">
+        <% lookup.items.each do |item| %>
+          <article class="lookup-result-card">
+            <div class="lookup-result-cover">
+              <% if item.cover_url.present? %>
+                <%= image_tag item.cover_url, alt: "#{item.title} cover" %>
+              <% else %>
+                <div class="lookup-cover-placeholder">No cover</div>
+              <% end %>
+            </div>
+            <div class="lookup-result-body">
+              <h3><%= item.title %></h3>
+              <p class="muted"><%= [item.author, item.publisher].compact.join(" · ").presence || "Metadata unavailable" %></p>
+              <div class="pill-row">
+                <% if item.published_on %>
+                  <span class="pill"><%= item.published_on.iso8601 %></span>
+                <% end %>
+                <% if item.price_sales %>
+                  <span class="pill"><%= number_to_currency(item.price_sales, unit: "₩", precision: 0) %></span>
+                <% end %>
+                <% if item.isbn13.present? %>
+                  <span class="pill">ISBN13 <%= item.isbn13 %></span>
+                <% end %>
+              </div>
+              <div class="button-row">
+                <%= link_to "Use this book", "#{search_path}?#{ { aladin_query: lookup.query, prefill: item.prefill_attributes }.to_query }", class: "button-link" %>
+                <% if item.link_url.present? %>
+                  <%= link_to "Open Aladin", item.link_url, class: "button-link secondary", target: "_blank", rel: "noopener" %>
+                <% end %>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="empty-state left">
+      <h3>Aladin search is unavailable.</h3>
+      <p><%= lookup.error_message %></p>
+      <p>Manual request entry still works without any API key.</p>
+    </div>
+  <% end %>
+</section>

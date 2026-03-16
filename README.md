@@ -80,6 +80,22 @@ source script/dev-env.sh
 bundle exec bin/rails runner 'puts Rails.application.class.name'
 ```
 
+## Aladin search integration
+
+The book request forms can optionally search the official Aladin developer API and prefill core book metadata.
+
+Configure a TTB key in the shell before starting Rails:
+
+```bash
+export ALADIN_TTB_KEY='your-ttb-key'
+```
+
+Notes:
+
+- If `ALADIN_TTB_KEY` is not set, the book request forms stay fully usable in manual-entry mode.
+- The current integration uses the Aladin `ItemSearch` API and prefills `title`, `author`, `publisher`, `cover_url`, and `link_url`.
+- Review Aladin API usage terms before enabling this in a company or production environment.
+
 ## PBIX migration artifacts
 
 The PBIX exporter can be rerun at any time:

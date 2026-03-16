@@ -80,6 +80,68 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
     assert_equal BigDecimal("5000"), created.additional_payment
   end
 
+  test "admin can search aladin and prefill a book request" do
+    sign_in_as(@admin)
+
+    lookup = Integrations::Aladin::BookSearch::Result.new(
+      enabled: true,
+      query: "Atomic Habits",
+      items: [
+        Integrations::Aladin::BookSearch::Item.new(
+          title: "Atomic Habits",
+          author: "James Clear",
+          publisher: "Avery",
+          cover_url: "https://example.com/atomic.jpg",
+          link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=1"
+        )
+      ],
+      error_message: nil
+    )
+
+    with_aladin_lookup(lookup) do
+      get new_admin_book_request_path, params: { aladin_query: "Atomic Habits" }
+    end
+
+    assert_response :success
+    assert_match "Search Aladin", response.body
+    assert_match "Atomic Habits", response.body
+    assert_match "Use this book", response.body
+
+    get new_admin_book_request_path, params: {
+      prefill: {
+        title: "Atomic Habits",
+        author: "James Clear",
+        publisher: "Avery",
+        cover_url: "https://example.com/atomic.jpg",
+        link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=1"
+      }
+    }
+
+    assert_response :success
+    assert_match 'value="Atomic Habits"', response.body
+    assert_match 'value="James Clear"', response.body
+    assert_match 'value="Avery"', response.body
+  end
+
+  test "admin book request form falls back cleanly when aladin is unavailable" do
+    sign_in_as(@admin)
+
+    lookup = Integrations::Aladin::BookSearch::Result.new(
+      enabled: false,
+      query: "",
+      items: [],
+      error_message: "Configure ALADIN_TTB_KEY to enable Aladin search."
+    )
+
+    with_aladin_lookup(lookup) do
+      get new_admin_book_request_path
+    end
+
+    assert_response :success
+    assert_match "Aladin search is unavailable", response.body
+    assert_match "Manual request entry still works", response.body
+  end
+
   test "member users cannot access book request admin screens" do
     sign_in_as(@member_user)
 
@@ -104,5 +166,13 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
   def sign_in_as(user)
     post session_path, params: { email: user.email, password: "secret123" }
     follow_redirect!
+  end
+
+  def with_aladin_lookup(result)
+    original = Integrations::Aladin::BookSearch.method(:call)
+    Integrations::Aladin::BookSearch.define_singleton_method(:call) { |**| result }
+    yield
+  ensure
+    Integrations::Aladin::BookSearch.define_singleton_method(:call) { |**kwargs| original.call(**kwargs) }
   end
 end
