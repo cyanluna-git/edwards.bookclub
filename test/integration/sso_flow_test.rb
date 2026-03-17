@@ -4,7 +4,7 @@ class AuthCallbacksControllerTest < ActionController::TestCase
   tests Auth::CallbacksController
 
   setup do
-    [ MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod ].each(&:delete_all)
+    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
 
     @member = Member.create!(english_name: "Hannah Lee", member_role: "정회원", active: true, email: "hannah@example.com")
     @user = User.create!(

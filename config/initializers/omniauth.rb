@@ -1,16 +1,16 @@
-entra_client_id = ENV["ENTRA_CLIENT_ID"].presence || (Rails.env.test? ? "test-client-id" : nil)
-entra_client_secret = ENV["ENTRA_CLIENT_SECRET"].presence || (Rails.env.test? ? "test-client-secret" : nil)
-entra_tenant_id = ENV["ENTRA_TENANT_ID"].presence || (Rails.env.test? ? "test-tenant-id" : nil)
-
-if entra_client_id.present? && entra_client_secret.present? && entra_tenant_id.present?
-  Rails.application.config.middleware.use OmniAuth::Builder do
-    provider :entra_id,
-      client_id: entra_client_id,
-      client_secret: entra_client_secret,
-      tenant_id: entra_tenant_id
-  end
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :entra_id,
+    client_id: ENV.fetch("ENTRA_CLIENT_ID", Rails.env.test? ? "test-client-id" : "not-configured"),
+    client_secret: ENV.fetch("ENTRA_CLIENT_SECRET", Rails.env.test? ? "test-client-secret" : "not-configured"),
+    tenant_id: ENV.fetch("ENTRA_TENANT_ID", Rails.env.test? ? "test-tenant-id" : "common")
 end
 
 OmniAuth.config.on_failure = proc { |env|
   Auth::CallbacksController.action(:failure).call(env)
 }
+
+if Rails.env.production?
+  %w[ENTRA_CLIENT_ID ENTRA_CLIENT_SECRET ENTRA_TENANT_ID].each do |key|
+    raise "Missing required environment variable: #{key}" unless ENV[key].present?
+  end
+end
