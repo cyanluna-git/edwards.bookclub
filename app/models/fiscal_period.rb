@@ -3,7 +3,7 @@ class FiscalPeriod < ApplicationRecord
   has_many :book_requests, dependent: :nullify
 
   validates :name, :start_date, :end_date, presence: true
-  validates :active, inclusion: { in: [true, false] }
+  validates :active, inclusion: { in: [ true, false ] }
   validate :end_date_on_or_after_start_date
   validate :single_active_period
 

@@ -19,7 +19,7 @@ jobs:
           bundler-cache: true
 
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bin/brakeman --no-pager
+        run: bin/brakeman --no-pager --ignore-config config/brakeman.ignore --ensure-ignore-notes --ensure-no-obsolete-ignore-entries
       
       - name: Scan for known security vulnerabilities in gems used
         run: bin/bundler-audit
@@ -37,7 +37,12 @@ jobs:
           bundler-cache: true
 
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
+        run: |
+          if [ -f config/importmap.rb ] && [ -x bin/importmap ]; then
+            bin/importmap audit
+          else
+            echo "Importmap is not configured; skipping JS audit."
+          fi
 
   lint:
     runs-on: ubuntu-latest
@@ -113,7 +118,13 @@ jobs:
           RAILS_ENV: test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test:system
+        run: |
+          bin/rails db:test:prepare
+          if find test/system -name '*_test.rb' -print -quit 2>/dev/null | grep -q .; then
+            bin/rails test:system
+          else
+            echo "No system tests found; skipping."
+          fi
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4

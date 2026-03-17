@@ -14,7 +14,7 @@ class Meeting < ApplicationRecord
 
   validates :title, :meeting_at, presence: true
   validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
-  validates :reserve_exempt_default, inclusion: { in: [true, false] }
+  validates :reserve_exempt_default, inclusion: { in: [ true, false ] }
 
   def attendance_count
     meeting_attendances.size

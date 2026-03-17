@@ -71,7 +71,12 @@ module Admin
     end
 
     def index_filters
-      params.permit(:q, :active, :role, :location)
+      {
+        q: params[:q].to_s,
+        active: %w[active inactive].include?(params[:active].to_s) ? params[:active].to_s : nil,
+        role: @role_options.include?(params[:role].to_s) ? params[:role].to_s : nil,
+        location: @location_options.include?(params[:location].to_s) ? params[:location].to_s : nil
+      }
     end
   end
 end

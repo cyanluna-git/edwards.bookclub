@@ -1,0 +1,8 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "e334d371c3be8a2fa4f23bf56f1c9cf56135b11c00e50cac5d0fa95f823da8fa",
+      "note": "Intentional authenticated redirect wrapper. The destination is constrained to purchase/cover kinds and revalidated through remote_link_url/remote_cover_url before redirecting."
+    }
+  ]
+}

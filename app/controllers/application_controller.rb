@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_current_request_context
 
-  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?
+  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?, :sso_enabled?, :sso_auto_redirect?
 
   private
 
@@ -40,6 +40,14 @@ class ApplicationController < ActionController::Base
 
   def can_manage_club?
     current_user&.can_manage_club?
+  end
+
+  def sso_enabled?
+    Auth::SsoConfiguration.enabled?
+  end
+
+  def sso_auto_redirect?
+    Auth::SsoConfiguration.auto_redirect?
   end
 
   def set_current_request_context

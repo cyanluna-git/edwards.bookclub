@@ -4,7 +4,7 @@ class MeetingAttendance < ApplicationRecord
 
   before_validation :refresh_award_snapshot, if: :should_refresh_award_snapshot?
 
-  validates :reserve_exempt, inclusion: { in: [true, false] }
+  validates :reserve_exempt, inclusion: { in: [ true, false ] }
   validates :member_id, uniqueness: { scope: :meeting_id }
   validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
   validates :awarded_points, :override_points, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true

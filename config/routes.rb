@@ -4,7 +4,10 @@ Rails.application.routes.draw do
 
   get "/sign-in", to: "sessions#new", as: :new_session
   post "/sign-in", to: "sessions#create", as: :session
+  get "/auth/sso", to: "sessions#sso", as: :sso_session
+  match "/auth/sso/callback", to: "sessions#sso", via: %i[get post], as: :sso_callback
   delete "/sign-out", to: "sessions#destroy", as: :destroy_session
+  get "/book-requests/:book_request_id/links/:kind", to: "book_request_links#show", as: :book_request_link
 
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard

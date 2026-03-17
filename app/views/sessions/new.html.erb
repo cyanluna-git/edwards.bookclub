@@ -1,20 +1,23 @@
 <main>
   <h1>Sign in</h1>
-  <p>Use the local admin seed or an imported user account.</p>
+  <% if sso_enabled? %>
+    <p>Use Edwards SSO first. Local email and password remain available only as a fallback.</p>
 
-  <%= form_with url: session_path, method: :post do |form| %>
-    <div>
-      <%= form.label :email %>
-      <%= form.email_field :email, required: true, autofocus: true, autocomplete: "username" %>
-    </div>
+    <section class="session-panel">
+      <div class="button-row">
+        <%= link_to "Sign in with Edwards SSO", sso_session_path, class: "button-link" %>
+      </div>
+      <p class="session-note">If your company SSO is already active, the app will map the returned email to an existing member or linked user automatically.</p>
+    </section>
 
-    <div>
-      <%= form.label :password %>
-      <%= form.password_field :password, required: true, autocomplete: "current-password" %>
-    </div>
-
-    <div>
-      <%= form.submit "Sign in" %>
-    </div>
+    <details class="session-panel session-fallback">
+      <summary>Use local fallback sign-in</summary>
+      <%= render "local_form" %>
+    </details>
+  <% else %>
+    <p>Use the local admin seed or an imported user account.</p>
+    <section class="session-panel">
+      <%= render "local_form" %>
+    </section>
   <% end %>
 </main>

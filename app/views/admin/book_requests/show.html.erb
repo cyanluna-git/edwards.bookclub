@@ -40,6 +40,9 @@
   </article>
 
   <aside class="panel stack">
+    <% remote_link_url = @book_request.remote_link_url %>
+    <% remote_cover_url = @book_request.remote_cover_url %>
+
     <% if @book_request.remote_cover_url.present? %>
       <div class="book-cover-preview">
         <%= image_tag @book_request.remote_cover_url, alt: "#{@book_request.title} cover" %>
@@ -47,8 +50,8 @@
     <% end %>
     <h2>Links</h2>
     <ul class="list-clean">
-      <li><%= @book_request.remote_link_url.present? ? link_to(@book_request.link_url, @book_request.link_url) : "No purchase link" %></li>
-      <li><%= @book_request.remote_cover_url.present? ? link_to(@book_request.cover_url, @book_request.cover_url) : "No cover link" %></li>
+      <li><%= remote_link_url.present? ? link_to("Open purchase link", book_request_link_path(book_request_id: @book_request, kind: :purchase), target: "_blank", rel: "noopener") : "No purchase link" %></li>
+      <li><%= remote_cover_url.present? ? link_to("Open cover image", book_request_link_path(book_request_id: @book_request, kind: :cover), target: "_blank", rel: "noopener") : "No cover link" %></li>
     </ul>
   </aside>
 </section>

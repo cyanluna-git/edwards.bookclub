@@ -2,7 +2,7 @@ require "test_helper"
 
 class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [ MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod ].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     @member = Member.create!(english_name: "Hannah Lee", member_role: "정회원", location: "천안", active: true)
