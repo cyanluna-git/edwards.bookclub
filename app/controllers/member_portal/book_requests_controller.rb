@@ -1,7 +1,7 @@
 module MemberPortal
   class BookRequestsController < BaseController
     before_action :require_linked_member!
-    before_action :set_book_request, only: %i[show edit update]
+    before_action :set_book_request, only: %i[show edit update destroy]
     before_action :prepare_aladin_lookup, only: %i[new create edit update]
 
     def index
@@ -43,6 +43,11 @@ module MemberPortal
       end
     end
 
+    def destroy
+      @book_request.destroy!
+      redirect_to member_book_requests_path, notice: "Book request deleted successfully."
+    end
+
     private
 
     def require_linked_member!
@@ -76,6 +81,7 @@ module MemberPortal
         :title,
         :author,
         :publisher,
+        :price,
         :cover_url,
         :link_url,
         :comment,
@@ -86,7 +92,7 @@ module MemberPortal
     end
 
     def prefill_params
-      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :cover_url, :link_url)
+      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :price, :cover_url, :link_url)
     end
   end
 end

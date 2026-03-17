@@ -14,6 +14,11 @@
 <%= form_with model: [:admin, book_request], local: true do |form| %>
   <div class="detail-grid">
     <div>
+      <% if book_request.remote_cover_url.present? %>
+        <div class="book-cover-preview">
+          <%= image_tag book_request.remote_cover_url, alt: "#{book_request.title.presence || 'Book'} cover" %>
+        </div>
+      <% end %>
       <div class="field-stack">
         <%= form.label :title %>
         <%= form.text_field :title, required: true %>
@@ -40,6 +45,13 @@
       </div>
     </div>
     <div>
+      <div class="field-stack">
+        <label>Requesting member</label>
+        <div class="panel panel-inline-note">
+          <strong><%= book_request.member&.display_name || current_user&.member&.display_name || "Select a member below" %></strong>
+          <span class="muted">Saved request ownership follows the member field below.</span>
+        </div>
+      </div>
       <div class="field-stack">
         <%= form.label :member_id, "Requesting member" %>
         <%= form.select :member_id, options_for_select([["Unlinked", ""]] + member_options.map { |member| [member.english_name, member.id] }, book_request.member_id) %>

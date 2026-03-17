@@ -46,4 +46,20 @@ class BookRequest < ApplicationRecord
   def net_cash_effect
     additional_payment.to_d - price.to_d
   end
+
+  def remote_cover_url
+    remote_url?(cover_url)
+  end
+
+  def remote_link_url
+    remote_url?(link_url)
+  end
+
+  private
+
+  def remote_url?(value)
+    url = value.to_s.strip
+    return if url.blank?
+    return url if url.start_with?("http://", "https://")
+  end
 end

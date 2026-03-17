@@ -25,7 +25,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
       requested_on: Date.new(2026, 3, 1)
     )
 
-    @admin = User.create!(email: "admin@example.com", password: "secret123", password_confirmation: "secret123", role: "admin")
+    @admin = User.create!(email: "admin@example.com", password: "secret123", password_confirmation: "secret123", role: "admin", member: @leader)
     @member_user = User.create!(email: "member@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @member)
   end
 
@@ -91,6 +91,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
           title: "Atomic Habits",
           author: "James Clear",
           publisher: "Avery",
+          price_sales: BigDecimal("18000"),
           cover_url: "https://example.com/atomic.jpg",
           link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=1"
         )
@@ -112,6 +113,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
         title: "Atomic Habits",
         author: "James Clear",
         publisher: "Avery",
+        price: "18000",
         cover_url: "https://example.com/atomic.jpg",
         link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=1"
       }
@@ -121,6 +123,8 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
     assert_match 'value="Atomic Habits"', response.body
     assert_match 'value="James Clear"', response.body
     assert_match 'value="Avery"', response.body
+    assert_match 'value="18000"', response.body
+    assert_match /option selected="selected" value="#{@leader.id}"/, response.body
   end
 
   test "admin book request form falls back cleanly when aladin is unavailable" do
@@ -159,6 +163,16 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
     assert_match "Net cash effect", response.body
     assert_match "Donella Meadows", response.body
     assert_match "Approved", response.body
+  end
+
+  test "non-url legacy cover values do not break the request index" do
+    sign_in_as(@admin)
+    @book_request.update!(cover_url: "[Record]")
+
+    get admin_book_requests_path
+
+    assert_response :success
+    assert_match "Thinking in Systems", response.body
   end
 
   private

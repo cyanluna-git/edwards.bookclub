@@ -27,7 +27,17 @@
       <tbody>
         <% @book_requests.each do |request| %>
           <tr>
-            <td><strong><%= link_to request.title, member_book_request_path(request) %></strong></td>
+            <td>
+              <div class="book-table-cell">
+                <% if request.remote_cover_url.present? %>
+                  <%= image_tag request.remote_cover_url, alt: "#{request.title} cover", class: "book-table-cover" %>
+                <% end %>
+                <div>
+                  <strong><%= link_to request.title, member_book_request_path(request) %></strong>
+                  <div class="muted"><%= [request.author, request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
+                </div>
+              </div>
+            </td>
             <td><span class="pill"><%= request.request_status.presence || "Requested" %></span></td>
             <td><%= request.requested_on&.iso8601 || "Not set" %></td>
             <td><%= request.price ? number_to_currency(request.price, unit: "KRW ", precision: 0) : "Pending" %></td>

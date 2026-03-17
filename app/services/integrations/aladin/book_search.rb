@@ -25,6 +25,7 @@ module Integrations
             title:,
             author:,
             publisher:,
+            price: price_sales&.to_s("F"),
             cover_url:,
             link_url:
           }.compact

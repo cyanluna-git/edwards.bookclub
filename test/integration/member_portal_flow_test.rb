@@ -66,6 +66,18 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     assert_equal "Requested", created.request_status
   end
 
+  test "member can delete their own book request" do
+    sign_in_as(@member_user)
+
+    assert_difference -> { @member.book_requests.count }, -1 do
+      delete member_book_request_path(@book_request)
+    end
+
+    assert_redirected_to member_book_requests_path
+    follow_redirect!
+    assert_match "Book request deleted successfully.", response.body
+  end
+
   test "member can search aladin and prefill their request form" do
     sign_in_as(@member_user)
 
@@ -77,6 +89,7 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
           title: "Deep Work",
           author: "Cal Newport",
           publisher: "Grand Central",
+          price_sales: BigDecimal("22000"),
           cover_url: "https://example.com/deep-work.jpg",
           link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=2"
         )
@@ -97,6 +110,7 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
         title: "Deep Work",
         author: "Cal Newport",
         publisher: "Grand Central",
+        price: "22000",
         cover_url: "https://example.com/deep-work.jpg",
         link_url: "https://www.aladin.co.kr/shop/wproduct.aspx?ItemId=2"
       }
@@ -106,6 +120,8 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     assert_match 'value="Deep Work"', response.body
     assert_match 'value="Cal Newport"', response.body
     assert_match 'value="Grand Central"', response.body
+    assert_match 'value="22000"', response.body
+    assert_match @member.display_name, response.body
   end
 
   test "member cannot access another members request" do
@@ -114,6 +130,17 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     get member_book_request_path(@other_request)
 
     assert_response :not_found
+  end
+
+  test "member request pages tolerate legacy non-url cover values" do
+    sign_in_as(@member_user)
+    @book_request.update!(cover_url: "[Record]")
+
+    get member_book_requests_path
+    assert_response :success
+
+    get member_book_request_path(@book_request)
+    assert_response :success
   end
 
   test "orphan member user is handled safely" do

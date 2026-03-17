@@ -10,6 +10,7 @@
       <h2>Request details</h2>
       <div class="button-row">
         <%= link_to "Edit submission", edit_member_book_request_path(@book_request), class: "button-link" %>
+        <%= button_to "Delete request", member_book_request_path(@book_request), method: :delete, form: { data: { turbo_confirm: "Delete this request?" } }, class: "button-link secondary" %>
         <%= link_to "Back", member_book_requests_path, class: "button-link secondary" %>
       </div>
     </div>
@@ -32,10 +33,15 @@
   </article>
 
   <aside class="panel stack">
+    <% if @book_request.remote_cover_url.present? %>
+      <div class="book-cover-preview">
+        <%= image_tag @book_request.remote_cover_url, alt: "#{@book_request.title} cover" %>
+      </div>
+    <% end %>
     <h2>Links</h2>
     <ul class="list-clean">
-      <li><%= @book_request.link_url.present? ? link_to(@book_request.link_url, @book_request.link_url) : "No purchase link" %></li>
-      <li><%= @book_request.cover_url.present? ? link_to(@book_request.cover_url, @book_request.cover_url) : "No cover link" %></li>
+      <li><%= @book_request.remote_link_url.present? ? link_to(@book_request.link_url, @book_request.link_url) : "No purchase link" %></li>
+      <li><%= @book_request.remote_cover_url.present? ? link_to(@book_request.cover_url, @book_request.cover_url) : "No cover link" %></li>
     </ul>
   </aside>
 </section>

@@ -95,9 +95,9 @@
   <% if @book_requests.any? %>
     <table class="data-table">
       <thead>
-        <tr>
-          <th>Book</th>
-          <th>Member</th>
+          <tr>
+            <th>Book</th>
+            <th>Member</th>
           <th>Status</th>
           <th>Requested</th>
           <th>Price</th>
@@ -109,8 +109,15 @@
         <% @book_requests.each do |request| %>
           <tr>
             <td>
-              <strong><%= link_to request.title, admin_book_request_path(request) %></strong>
-              <div class="muted"><%= [request.author, request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
+              <div class="book-table-cell">
+                <% if request.remote_cover_url.present? %>
+                  <%= image_tag request.remote_cover_url, alt: "#{request.title} cover", class: "book-table-cover" %>
+                <% end %>
+                <div>
+                  <strong><%= link_to request.title, admin_book_request_path(request) %></strong>
+                  <div class="muted"><%= [request.author, request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
+                </div>
+              </div>
             </td>
             <td><%= request.member&.english_name || "Unlinked" %></td>
             <td><span class="pill"><%= request.request_status.presence || "No status" %></span></td>

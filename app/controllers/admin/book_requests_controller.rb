@@ -20,6 +20,7 @@ module Admin
 
     def new
       @book_request = BookRequest.new(
+        member: default_requesting_member,
         fiscal_period: FiscalPeriod.find_by(active: true),
         requested_on: Date.current,
         request_status: BookRequest.status_options.first
@@ -29,6 +30,7 @@ module Admin
 
     def create
       @book_request = BookRequest.new(book_request_params)
+      @book_request.member ||= default_requesting_member
 
       if @book_request.save
         redirect_to admin_book_request_path(@book_request), notice: "Book request created successfully."
@@ -108,7 +110,11 @@ module Admin
     end
 
     def prefill_params
-      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :cover_url, :link_url)
+      params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :price, :cover_url, :link_url)
+    end
+
+    def default_requesting_member
+      current_user&.member
     end
   end
 end

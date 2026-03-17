@@ -30,7 +30,7 @@ Rails.application.routes.draw do
 
   scope module: "member_portal", path: "member", as: "member" do
     get "/", to: "dashboard#show", as: :root
-    resources :book_requests, only: %i[index show new create edit update]
+    resources :book_requests, only: %i[index show new create edit update destroy]
   end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html

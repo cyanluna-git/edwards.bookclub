@@ -14,6 +14,11 @@
 <%= form_with model: [:member, book_request], local: true do |form| %>
   <div class="detail-grid">
     <div>
+      <% if book_request.remote_cover_url.present? %>
+        <div class="book-cover-preview">
+          <%= image_tag book_request.remote_cover_url, alt: "#{book_request.title.presence || 'Book'} cover" %>
+        </div>
+      <% end %>
       <div class="field-stack">
         <%= form.label :title %>
         <%= form.text_field :title, required: true %>
@@ -33,12 +38,24 @@
     </div>
     <div>
       <div class="field-stack">
+        <label>Requesting member</label>
+        <div class="panel panel-inline-note">
+          <strong><%= current_member.display_name %></strong>
+          <span class="muted">This request will be saved under your member profile.</span>
+        </div>
+      </div>
+      <div class="field-stack">
         <%= form.label :requested_on, "Request date" %>
         <%= form.date_field :requested_on %>
       </div>
       <div class="field-stack">
         <%= form.label :rating, "Your rating" %>
         <%= form.text_field :rating %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :price, "Aladin price" %>
+        <%= form.number_field :price, step: "1", min: 0, readonly: true %>
+        <p class="muted">Prefilled from Aladin when available. Admin can adjust later if needed.</p>
       </div>
       <div class="field-stack">
         <%= form.label :fiscal_period_id, "Fiscal period" %>
