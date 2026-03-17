@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_current_request_context
 
-  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?, :sso_enabled?, :sso_auto_redirect?
+  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?, :sso_enabled?, :sso_auto_redirect?, :entra_id_enabled?
 
   private
 
@@ -48,6 +48,12 @@ class ApplicationController < ActionController::Base
 
   def sso_auto_redirect?
     Auth::SsoConfiguration.auto_redirect?
+  end
+
+  def entra_id_enabled?
+    ENV["ENTRA_TENANT_ID"].present? &&
+      ENV["ENTRA_CLIENT_ID"].present? &&
+      ENV["ENTRA_CLIENT_SECRET"].present?
   end
 
   def set_current_request_context

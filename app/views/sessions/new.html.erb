@@ -1,6 +1,17 @@
 <main>
   <h1>Sign in</h1>
-  <% if sso_enabled? %>
+  <% if entra_id_enabled? %>
+    <p>Sign in with Microsoft first. Local email and password remain available only as an admin fallback.</p>
+
+    <section class="session-panel">
+      <%= form_with url: "/auth/entra_id", method: :post do |form| %>
+        <div class="button-row">
+          <%= form.submit "Sign in with Microsoft" %>
+        </div>
+      <% end %>
+      <p class="session-note">Your Microsoft identity is matched to an existing Bookclub user or linked member email.</p>
+    </section>
+  <% elsif sso_enabled? %>
     <p>Use Edwards SSO first. Local email and password remain available only as a fallback.</p>
 
     <section class="session-panel">
@@ -19,5 +30,14 @@
     <section class="session-panel">
       <%= render "local_form" %>
     </section>
+  <% end %>
+
+  <% if entra_id_enabled? %>
+    <hr>
+
+    <details class="session-panel session-fallback">
+      <summary>Use local fallback sign-in</summary>
+      <%= render "local_form" %>
+    </details>
   <% end %>
 </main>
