@@ -6,6 +6,10 @@ Rails.application.routes.draw do
   post "/sign-in", to: "sessions#create", as: :session
   delete "/sign-out", to: "sessions#destroy", as: :destroy_session
 
+  # Entra ID OIDC SSO — OmniAuth middleware handles POST /auth/entra_id (redirect to Microsoft)
+  get "/auth/entra_id/callback", to: "auth/callbacks#entra_id", as: :auth_entra_id_callback
+  get "/auth/failure",           to: "auth/callbacks#failure",  as: :auth_failure
+
   namespace :admin do
     get "/", to: "dashboard#show", as: :dashboard
 
