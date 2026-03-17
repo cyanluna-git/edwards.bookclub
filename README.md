@@ -96,6 +96,61 @@ Notes:
 - The current integration uses the Aladin `ItemSearch` API and prefills `title`, `author`, `publisher`, `cover_url`, and `link_url`.
 - Review Aladin API usage terms before enabling this in a company or production environment.
 
+## SSO email handoff
+
+The app can accept an upstream SSO email and create the local Rails session without a password prompt.
+
+Environment variables:
+
+```bash
+BOOKCLUB_SSO_ENABLED=true
+BOOKCLUB_SSO_LOGIN_URL='https://your-sso-entry.example.com'
+BOOKCLUB_SSO_EMAIL_HEADERS='X-Forwarded-Email,X-Auth-Request-Email'
+BOOKCLUB_SSO_AUTO_REDIRECT=false
+BOOKCLUB_SSO_SHARED_SECRET='shared-secret-for-signed-callbacks'
+BOOKCLUB_SSO_MAX_AGE_SECONDS=300
+```
+
+Behavior:
+
+- `BOOKCLUB_SSO_ENABLED=true` turns on the SSO entry and callback paths.
+- `GET /auth/sso` redirects to `BOOKCLUB_SSO_LOGIN_URL` when no email is present yet.
+- `GET` or `POST /auth/sso/callback` accepts a trusted upstream email and signs the user in.
+- If the email matches an existing `users.email`, that account is used.
+- If there is no `User` yet but there is an active `members.email`, the app auto-creates a linked `member` user.
+- Local email/password login remains available as fallback.
+
+Callback options:
+
+- Preferred: an internal proxy or auth layer injects a trusted email header such as `X-Forwarded-Email`.
+- Alternative: send `email`, `ts`, and `sig` where `sig = HMAC_SHA256(shared_secret, "#{email}:#{ts}")`.
+- Query-parameter callback verification is relaxed in `development` and `test` to keep local integration simple.
+
+## Microsoft Entra ID sign-in
+
+The app can also authenticate directly against Microsoft Entra ID using OmniAuth.
+
+Environment variables:
+
+```bash
+ENTRA_TENANT_ID='tenant-uuid'
+ENTRA_CLIENT_ID='application-client-id'
+ENTRA_CLIENT_SECRET='application-client-secret'
+```
+
+Behavior:
+
+- When all three Entra variables are present, the sign-in page promotes `Sign in with Microsoft` as the primary path.
+- The callback uses the returned Microsoft email identity and matches it to an existing `users.email`.
+- If there is no `User` yet but there is an active `members.email`, the app auto-creates a linked member user.
+- Local email/password sign-in remains available as an admin fallback.
+
+Azure redirect URI:
+
+```text
+https://bookclub.10.82.37.79.sslip.io/auth/entra_id/callback
+```
+
 ## PBIX migration artifacts
 
 The PBIX exporter can be rerun at any time:

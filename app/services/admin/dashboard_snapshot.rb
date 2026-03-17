@@ -136,7 +136,7 @@ module Admin
       counts = period_attendance_scope.group(:member_id).count
       members = Member.where(id: counts.keys).index_by(&:id)
 
-      counts.sort_by { |member_id, count| [-count, members[member_id]&.display_name.to_s] }.first(10).filter_map do |member_id, count|
+      counts.sort_by { |member_id, count| [ -count, members[member_id]&.display_name.to_s ] }.first(10).filter_map do |member_id, count|
         member = members[member_id]
         next if member.nil?
 
@@ -175,7 +175,7 @@ module Admin
             tone: location_tone(member.location)
           )
         end
-        .sort_by { |row| [-row.balance.to_d, row.member.display_name.to_s] }
+        .sort_by { |row| [ -row.balance.to_d, row.member.display_name.to_s ] }
       end
 
     def monthly_attendance_points
@@ -216,8 +216,8 @@ module Admin
       selected_month_meetings_scope.map do |meeting|
         MeetingDigest.new(
           meeting:,
-          attendees: meeting.meeting_attendances.sort_by { |attendance| [attendance.member.display_name.to_s, attendance.id.to_i] }.map(&:member),
-          photos: meeting.meeting_photos.sort_by { |photo| [photo.sort_order || 0, photo.id] },
+          attendees: meeting.meeting_attendances.sort_by { |attendance| [ attendance.member.display_name.to_s, attendance.id.to_i ] }.map(&:member),
+          photos: meeting.meeting_photos.sort_by { |photo| [ photo.sort_order || 0, photo.id ] },
           attendance_count: meeting.meeting_attendances.size,
           tone: location_tone(meeting.location)
         )
@@ -268,7 +268,7 @@ module Admin
         .uniq
         .sort
 
-      latest_months.presence || [Date.current.beginning_of_month]
+      latest_months.presence || [ Date.current.beginning_of_month ]
     end
   end
 end

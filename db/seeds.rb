@@ -19,7 +19,7 @@ ReservePolicy.find_or_create_by!(member_role: "정회원", effective_from: activ
   policy.effective_to = active_period.end_date
 end
 
-["Lead", "Lead:총무"].each do |role_name|
+[ "Lead", "Lead:총무" ].each do |role_name|
   ReservePolicy.find_or_create_by!(member_role: role_name, effective_from: active_period.start_date) do |policy|
     policy.attendance_points = 10_000
     policy.effective_to = active_period.end_date

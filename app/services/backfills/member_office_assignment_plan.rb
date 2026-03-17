@@ -14,7 +14,7 @@ module Backfills
     def call
       return Result.new(member_assignments: {}, warnings: []) unless @path.exist?
 
-      payload = YAML.safe_load(@path.read, permitted_classes: [Date], aliases: false) || {}
+      payload = YAML.safe_load(@path.read, permitted_classes: [ Date ], aliases: false) || {}
       warnings = []
       member_assignments = {}
 

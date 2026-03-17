@@ -37,7 +37,7 @@ class Member < ApplicationRecord
   validates :email, uniqueness: true, allow_blank: true
   validates :email, format: { with: EMAIL_FORMAT }, allow_blank: true
   validates :source_key, uniqueness: { scope: :source_system }, allow_nil: true
-  validates :active, inclusion: { in: [true, false] }
+  validates :active, inclusion: { in: [ true, false ] }
 
   def self.filter(params = {})
     ordered

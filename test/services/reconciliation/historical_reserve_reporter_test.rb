@@ -2,7 +2,7 @@ require "test_helper"
 
 class HistoricalReserveReporterTest < ActiveSupport::TestCase
   setup do
-    [MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, MemberOfficeAssignment, Member, ReservePolicy, FiscalPeriod].each(&:delete_all)
+    [ MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, MemberOfficeAssignment, Member, ReservePolicy, FiscalPeriod ].each(&:delete_all)
 
     @period = FiscalPeriod.create!(name: "FY2026", start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31), active: true)
     ReservePolicy.create!(member_role: "정회원", attendance_points: 5000, effective_from: @period.start_date, effective_to: @period.end_date)

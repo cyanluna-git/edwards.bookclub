@@ -24,6 +24,6 @@ class MemberTest < ActiveSupport::TestCase
       effective_to: Date.new(2026, 12, 31)
     )
 
-    assert_equal ["지역 리더 · 아산"], member.office_labels_on(Date.new(2026, 6, 1))
+    assert_equal [ "지역 리더 · 아산" ], member.office_labels_on(Date.new(2026, 6, 1))
   end
 end

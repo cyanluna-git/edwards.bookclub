@@ -1,6 +1,8 @@
 require "test_helper"
 
-class SsoFlowTest < ActionDispatch::IntegrationTest
+class AuthCallbacksControllerTest < ActionController::TestCase
+  tests Auth::CallbacksController
+
   setup do
     [ MeetingPhoto, MeetingAttendance, Meeting, BookRequest, User, Member, ReservePolicy, FiscalPeriod ].each(&:delete_all)
 
@@ -18,88 +20,70 @@ class SsoFlowTest < ActionDispatch::IntegrationTest
       password_confirmation: "irrelevant-for-sso",
       role: "admin"
     )
-
-    OmniAuth.config.test_mode = true
   end
 
-  teardown do
-    OmniAuth.config.test_mode = false
-    OmniAuth.config.mock_auth[:entra_id] = nil
-  end
+  test "successful entra callback creates rails session and redirects to root" do
+    @request.env["omniauth.auth"] = mock_auth_hash(@user.email)
 
-  # ---------------------------------------------------------------------------
-  # Successful callbacks
-  # ---------------------------------------------------------------------------
+    get :entra_id
 
-  test "successful SSO callback creates Rails session and redirects to root" do
-    OmniAuth.config.mock_auth[:entra_id] = mock_auth_hash(@user.email)
-
-    post "/auth/entra_id"
-    follow_redirect!
     assert_redirected_to root_path
     assert_equal "Signed in with Microsoft successfully.", flash[:notice]
+    assert_equal @user.id, session[:user_id]
   end
 
-  test "successful SSO callback is case-insensitive on email" do
-    OmniAuth.config.mock_auth[:entra_id] = mock_auth_hash(@user.email.upcase)
+  test "successful entra callback is case-insensitive on email" do
+    @request.env["omniauth.auth"] = mock_auth_hash(@user.email.upcase)
 
-    post "/auth/entra_id"
-    follow_redirect!
+    get :entra_id
+
+    assert_redirected_to root_path
+    assert_equal @user.id, session[:user_id]
+  end
+
+  test "admin can sign in via entra" do
+    @request.env["omniauth.auth"] = mock_auth_hash(@admin.email)
+
+    get :entra_id
+
+    assert_redirected_to root_path
+    assert_equal @admin.id, session[:user_id]
+  end
+
+  test "member email is auto-provisioned when no user exists yet" do
+    linked_member = Member.create!(
+      english_name: "Gerald Park",
+      member_role: "정회원",
+      active: true,
+      email: "gerald.sso@example.com"
+    )
+    @request.env["omniauth.auth"] = mock_auth_hash(linked_member.email)
+
+    assert_difference("User.count", 1) do
+      get :entra_id
+    end
+
+    provisioned_user = User.find_by!(email: linked_member.email)
+    assert_equal linked_member, provisioned_user.member
+    assert_equal provisioned_user.id, session[:user_id]
     assert_redirected_to root_path
   end
-
-  test "admin can sign in via SSO" do
-    OmniAuth.config.mock_auth[:entra_id] = mock_auth_hash(@admin.email)
-
-    post "/auth/entra_id"
-    follow_redirect!
-    assert_redirected_to root_path
-  end
-
-  # ---------------------------------------------------------------------------
-  # Unknown / unlinked user
-  # ---------------------------------------------------------------------------
 
   test "unknown email is rejected and redirected to sign-in" do
-    OmniAuth.config.mock_auth[:entra_id] = mock_auth_hash("nobody@corp.example.com")
+    @request.env["omniauth.auth"] = mock_auth_hash("nobody@corp.example.com")
 
-    post "/auth/entra_id"
-    follow_redirect!
+    get :entra_id
+
     assert_redirected_to new_session_path
-    follow_redirect!
-    assert_match "No Bookclub account is linked to nobody@corp.example.com", response.body
-  end
-
-  test "rejected SSO attempt leaves session unauthenticated" do
-    OmniAuth.config.mock_auth[:entra_id] = mock_auth_hash("nobody@corp.example.com")
-
-    post "/auth/entra_id"
-    follow_redirect! # → new_session_path redirect
-
-    get root_path
-    assert_redirected_to new_session_path
-  end
-
-  # ---------------------------------------------------------------------------
-  # Failure callback (invalid token / cancelled login)
-  # ---------------------------------------------------------------------------
-
-  test "OmniAuth failure redirects to sign-in with error message" do
-    OmniAuth.config.mock_auth[:entra_id] = :invalid_credentials
-
-    post "/auth/entra_id"
-    follow_redirect!
-    assert_redirected_to new_session_path
-    follow_redirect!
-    assert_match "Microsoft sign-in failed", response.body
+    assert_match "No Bookclub account is linked to nobody@corp.example.com", flash[:alert]
+    assert_nil session[:user_id]
   end
 
   test "direct GET to /auth/failure shows error message" do
-    get "/auth/failure", params: { message: "access_denied" }
+    get :failure, params: { message: "access_denied" }
 
     assert_redirected_to new_session_path
-    follow_redirect!
-    assert_match "Microsoft sign-in failed", response.body
+    assert_match "Microsoft sign-in failed", flash[:alert]
   end
 
   private
@@ -111,5 +95,21 @@ class SsoFlowTest < ActionDispatch::IntegrationTest
       info: OmniAuth::AuthHash::InfoHash.new(email: email),
       credentials: OmniAuth::AuthHash.new(token: "fake-token", expires_at: 1.hour.from_now.to_i)
     )
+  end
+end
+
+class SsoFlowTest < ActionDispatch::IntegrationTest
+  test "sign-in page shows microsoft sign-in when entra vars are set" do
+    with_env(
+      "ENTRA_TENANT_ID" => "tenant-uuid",
+      "ENTRA_CLIENT_ID" => "client-id",
+      "ENTRA_CLIENT_SECRET" => "client-secret"
+    ) do
+      get new_session_path
+
+      assert_response :success
+      assert_match "Sign in with Microsoft", response.body
+      assert_match "Use local fallback sign-in", response.body
+    end
   end
 end

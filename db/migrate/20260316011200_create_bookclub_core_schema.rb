@@ -47,7 +47,7 @@ class CreateBookclubCoreSchema < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :reserve_policies, [:member_role, :effective_from], unique: true
+    add_index :reserve_policies, [ :member_role, :effective_from ], unique: true
 
     create_table :meetings do |t|
       t.string :legacy_title
@@ -85,7 +85,7 @@ class CreateBookclubCoreSchema < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :meeting_attendances, [:meeting_id, :member_id], unique: true
+    add_index :meeting_attendances, [ :meeting_id, :member_id ], unique: true
 
     create_table :book_requests do |t|
       t.references :member, foreign_key: { on_delete: :nullify }

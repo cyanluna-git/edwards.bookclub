@@ -12,6 +12,35 @@ class User < ApplicationRecord
   validates :email, uniqueness: true
   validates :role, inclusion: { in: ROLES }
 
+  def self.find_or_provision_from_sso(email)
+    normalized_email = email.to_s.strip.downcase
+    return if normalized_email.blank?
+
+    user = find_by(email: normalized_email)
+    member = Member.find_by(email: normalized_email)
+
+    if user.present?
+      if member.present? && user.member.nil?
+        user.update!(member:)
+      end
+
+      return user
+    end
+
+    return unless member&.active?
+    return if member.user.present?
+
+    generated_password = SecureRandom.base58(24)
+
+    create!(
+      email: normalized_email,
+      member:,
+      role: "member",
+      password: generated_password,
+      password_confirmation: generated_password
+    )
+  end
+
   def admin?
     role == "admin"
   end

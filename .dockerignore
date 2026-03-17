@@ -45,6 +45,12 @@
 
 # Ignore development files
 /.devcontainer
+/.claude
+/.codex
+/artifacts
+/reports
+/docs
+/*.pbix
 
 # Ignore Docker-related files
 /.dockerignore

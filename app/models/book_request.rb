@@ -1,6 +1,6 @@
 class BookRequest < ApplicationRecord
   SEARCH_COLUMNS = %w[book_requests.title book_requests.author book_requests.publisher book_requests.comment book_requests.request_status].freeze
-  DEFAULT_STATUSES = ["Requested", "Approved", "Purchased", "Rejected", "On Hold"].freeze
+  DEFAULT_STATUSES = [ "Requested", "Approved", "Purchased", "Rejected", "On Hold" ].freeze
 
   belongs_to :member, optional: true
   belongs_to :fiscal_period, optional: true
@@ -17,7 +17,7 @@ class BookRequest < ApplicationRecord
     if query.present?
       pattern = "%#{sanitize_sql_like(query.strip)}%"
       left_joins(:member).where(
-        (SEARCH_COLUMNS + ["members.english_name", "members.korean_name"]).map { |column| "#{column} LIKE :pattern" }.join(" OR "),
+        (SEARCH_COLUMNS + [ "members.english_name", "members.korean_name" ]).map { |column| "#{column} LIKE :pattern" }.join(" OR "),
         pattern:
       )
     else
@@ -60,6 +60,6 @@ class BookRequest < ApplicationRecord
   def remote_url?(value)
     url = value.to_s.strip
     return if url.blank?
-    return url if url.start_with?("http://", "https://")
+    url if url.start_with?("http://", "https://")
   end
 end

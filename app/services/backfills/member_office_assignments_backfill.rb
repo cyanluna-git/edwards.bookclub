@@ -53,7 +53,7 @@ module Backfills
     private
 
     def assignment_attributes_for(member, planned_assignments)
-      return [planned_assignments, []] if planned_assignments.present?
+      return [ planned_assignments, [] ] if planned_assignments.present?
 
       role_text = member.member_role.to_s
       assignments = []
@@ -70,7 +70,7 @@ module Backfills
         end
       end
 
-      [assignments.uniq, warnings]
+      [ assignments.uniq, warnings ]
     end
 
     def base_attributes(member, office_type:, location: nil)

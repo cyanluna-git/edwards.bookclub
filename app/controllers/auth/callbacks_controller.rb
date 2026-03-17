@@ -4,12 +4,10 @@ class Auth::CallbacksController < ApplicationController
   skip_before_action :verify_authenticity_token, only: :entra_id
 
   def entra_id
-    auth  = request.env["omniauth.auth"]
-    email = auth.dig("info", "email").to_s.strip.downcase
+    email = resolved_email(request.env["omniauth.auth"])
+    user = User.find_or_provision_from_sso(email)
 
-    user = User.find_by(email: email)
-
-    if user
+    if user.present?
       reset_session
       session[:user_id] = user.id
       Rails.logger.info "[SSO] Sign-in via Entra ID: user_id=#{user.id} email=#{email}"
@@ -26,5 +24,19 @@ class Auth::CallbacksController < ApplicationController
     Rails.logger.warn "[SSO] Entra ID authentication failed: #{message}"
     redirect_to new_session_path,
       alert: "Microsoft sign-in failed (#{message.humanize.downcase}). Try again or use local sign-in."
+  end
+
+  private
+
+  def resolved_email(auth)
+    return "" if auth.blank?
+
+    [
+      auth.dig("info", "email"),
+      auth.dig("info", "nickname"),
+      auth.dig("extra", "raw_info", "email"),
+      auth.dig("extra", "raw_info", "preferred_username"),
+      auth.dig("extra", "raw_info", "upn")
+    ].filter_map { |value| value.to_s.strip.downcase.presence }.first.to_s
   end
 end

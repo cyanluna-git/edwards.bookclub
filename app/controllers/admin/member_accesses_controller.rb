@@ -63,7 +63,14 @@ module Admin
     end
 
     def user_access_params
-      params.require(:user_access).permit(:email, :role, :password, :password_confirmation)
+      raw = params.require(:user_access)
+
+      {
+        email: raw[:email].to_s.strip.downcase,
+        role: User::ROLES.include?(raw[:role].to_s) ? raw[:role].to_s : nil,
+        password: raw[:password].to_s,
+        password_confirmation: raw[:password_confirmation].to_s
+      }
     end
   end
 end

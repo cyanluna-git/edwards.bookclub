@@ -67,7 +67,7 @@ module Imports
     def upsert_meeting(row, meeting_at)
       raw_title = normalize_text(row["Title"])
       location = normalize_text(row["Location"])
-      source_key = Digest::SHA256.hexdigest([raw_title, meeting_at.iso8601, location].join("|"))
+      source_key = Digest::SHA256.hexdigest([ raw_title, meeting_at.iso8601, location ].join("|"))
 
       meeting = Meeting.find_or_initialize_by(source_system: MEETING_SOURCE_SYSTEM, source_key:)
       new_record = meeting.new_record?
@@ -102,7 +102,7 @@ module Imports
 
       photo = MeetingPhoto.find_or_initialize_by(
         source_system: PHOTO_SOURCE_SYSTEM,
-        source_key: Digest::SHA256.hexdigest([meeting.source_key, source_url].join("|"))
+        source_key: Digest::SHA256.hexdigest([ meeting.source_key, source_url ].join("|"))
       )
       new_record = photo.new_record?
       photo.assign_attributes(meeting:, source_url:)

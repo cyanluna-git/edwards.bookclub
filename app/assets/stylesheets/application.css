@@ -235,6 +235,7 @@ label {
 
 input[type="text"],
 input[type="email"],
+input[type="password"],
 input[type="date"],
 select,
 textarea {
@@ -258,6 +259,26 @@ textarea {
   align-items: baseline;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.session-panel {
+  max-width: 720px;
+  margin-top: 1.25rem;
+}
+
+.session-fallback summary {
+  cursor: pointer;
+  color: var(--ink-soft);
+}
+
+.session-fallback[open] summary {
+  margin-bottom: 1rem;
+}
+
+.session-note {
+  margin-top: 0.85rem;
+  color: var(--ink-soft);
+  max-width: 58ch;
 }
 
 .muted {

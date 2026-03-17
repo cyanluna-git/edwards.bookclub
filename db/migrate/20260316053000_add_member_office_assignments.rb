@@ -15,14 +15,14 @@ class AddMemberOfficeAssignments < ActiveRecord::Migration[8.1]
     end
 
     add_index :member_office_assignments,
-              [:office_type, :location, :effective_from],
+              [ :office_type, :location, :effective_from ],
               name: "index_member_office_assignments_on_office_scope_and_start"
     add_index :member_office_assignments,
-              [:member_id, :office_type, :location, :effective_from],
+              [ :member_id, :office_type, :location, :effective_from ],
               unique: true,
               name: "index_member_office_assignments_on_member_scope_and_start"
     add_index :member_office_assignments,
-              [:source_system, :source_key],
+              [ :source_system, :source_key ],
               unique: true,
               where: "source_key IS NOT NULL",
               name: "index_member_office_assignments_on_source_system_and_source_key"

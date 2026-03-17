@@ -1,30 +1,43 @@
 <main>
   <h1>Sign in</h1>
+  <% if entra_id_enabled? %>
+    <p>Sign in with Microsoft first. Local email and password remain available only as an admin fallback.</p>
 
-  <%= form_with url: "/auth/entra_id", method: :post do |form| %>
-    <%= form.submit "Sign in with Microsoft" %>
+    <section class="session-panel">
+      <%= form_with url: "/auth/entra_id", method: :post do |form| %>
+        <div class="button-row">
+          <%= form.submit "Sign in with Microsoft" %>
+        </div>
+      <% end %>
+      <p class="session-note">Your Microsoft identity is matched to an existing Bookclub user or linked member email.</p>
+    </section>
+  <% elsif sso_enabled? %>
+    <p>Use Edwards SSO first. Local email and password remain available only as a fallback.</p>
+
+    <section class="session-panel">
+      <div class="button-row">
+        <%= link_to "Sign in with Edwards SSO", sso_session_path, class: "button-link" %>
+      </div>
+      <p class="session-note">If your company SSO is already active, the app will map the returned email to an existing member or linked user automatically.</p>
+    </section>
+
+    <details class="session-panel session-fallback">
+      <summary>Use local fallback sign-in</summary>
+      <%= render "local_form" %>
+    </details>
+  <% else %>
+    <p>Use the local admin seed or an imported user account.</p>
+    <section class="session-panel">
+      <%= render "local_form" %>
+    </section>
   <% end %>
 
-  <hr>
+  <% if entra_id_enabled? %>
+    <hr>
 
-  <details>
-    <summary>Local sign-in (admin fallback)</summary>
-    <p>Use the local admin seed or an imported user account.</p>
-
-    <%= form_with url: session_path, method: :post do |form| %>
-      <div>
-        <%= form.label :email %>
-        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "username" %>
-      </div>
-
-      <div>
-        <%= form.label :password %>
-        <%= form.password_field :password, required: true, autocomplete: "current-password" %>
-      </div>
-
-      <div>
-        <%= form.submit "Sign in" %>
-      </div>
-    <% end %>
-  </details>
+    <details class="session-panel session-fallback">
+      <summary>Use local fallback sign-in</summary>
+      <%= render "local_form" %>
+    </details>
+  <% end %>
 </main>

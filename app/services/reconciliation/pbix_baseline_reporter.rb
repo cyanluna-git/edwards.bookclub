@@ -110,7 +110,7 @@ module Reconciliation
     end
 
     def leader_points_value
-      points = ReservePolicy.where(member_role: ["Lead", "Lead:총무"]).distinct.pluck(:attendance_points)
+      points = ReservePolicy.where(member_role: [ "Lead", "Lead:총무" ]).distinct.pluck(:attendance_points)
       return if points.empty? || points.uniq.many?
 
       points.first.to_s
