@@ -126,6 +126,31 @@ Callback options:
 - Alternative: send `email`, `ts`, and `sig` where `sig = HMAC_SHA256(shared_secret, "#{email}:#{ts}")`.
 - Query-parameter callback verification is relaxed in `development` and `test` to keep local integration simple.
 
+## Microsoft Entra ID sign-in
+
+The app can also authenticate directly against Microsoft Entra ID using OmniAuth.
+
+Environment variables:
+
+```bash
+ENTRA_TENANT_ID='tenant-uuid'
+ENTRA_CLIENT_ID='application-client-id'
+ENTRA_CLIENT_SECRET='application-client-secret'
+```
+
+Behavior:
+
+- When all three Entra variables are present, the sign-in page promotes `Sign in with Microsoft` as the primary path.
+- The callback uses the returned Microsoft email identity and matches it to an existing `users.email`.
+- If there is no `User` yet but there is an active `members.email`, the app auto-creates a linked member user.
+- Local email/password sign-in remains available as an admin fallback.
+
+Azure redirect URI:
+
+```text
+https://bookclub.10.82.37.79.sslip.io/auth/entra_id/callback
+```
+
 ## PBIX migration artifacts
 
 The PBIX exporter can be rerun at any time:
