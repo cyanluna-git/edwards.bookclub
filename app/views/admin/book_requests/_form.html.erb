@@ -16,69 +16,76 @@
 <% end %>
 
 <%= form_with model: [:admin, book_request], local: true do |form| %>
-  <div class="stack" style="max-width: 600px; gap: 1rem;">
-    <% if book_request.remote_cover_url.present? %>
-      <div style="display: flex; gap: 1rem; align-items: start;">
-        <%= image_tag book_request.remote_cover_url, alt: "Cover", style: "width: 80px; border-radius: 6px;" %>
-        <div class="stack" style="flex: 1; gap: 0.75rem;">
-          <div class="field-stack">
-            <%= form.label :title %>
-            <%= form.text_field :title, required: true %>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="field-stack">
-              <%= form.label :author %>
-              <%= form.text_field :author %>
-            </div>
-            <div class="field-stack">
-              <%= form.label :publisher %>
-              <%= form.text_field :publisher %>
-            </div>
-          </div>
-        </div>
-      </div>
-    <% else %>
-      <div class="field-stack">
-        <%= form.label :title %>
-        <%= form.text_field :title, required: true %>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-        <div class="field-stack">
-          <%= form.label :author %>
-          <%= form.text_field :author %>
-        </div>
-        <div class="field-stack">
-          <%= form.label :publisher %>
-          <%= form.text_field :publisher %>
-        </div>
-      </div>
-    <% end %>
+  <div style="max-width: 640px; margin: 0 auto;">
+    <div class="panel stack" style="padding: 1.5rem; gap: 1rem;">
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+      <% requester = book_request.member || current_user&.member %>
+      <% if requester %>
+        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px;">
+          <strong style="font-size: 0.9rem;"><%= requester.display_name %></strong>
+          <span class="muted" style="font-size: 0.8rem;"><%= requester.email %></span>
+          <span class="location-pill tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(requester.location.to_s, "neutral") %>" style="font-size: 0.7rem;"><%= requester.location.presence || "미정" %></span>
+        </div>
+        <%= form.hidden_field :member_id, value: requester.id %>
+      <% end %>
+
+      <% if book_request.remote_cover_url.present? %>
+        <div style="display: flex; gap: 1.25rem; align-items: start;">
+          <%= image_tag book_request.remote_cover_url, alt: "Cover", style: "width: 100px; border-radius: 6px; flex-shrink: 0;" %>
+          <div class="stack" style="flex: 1; gap: 0.75rem;">
+            <div class="field-stack">
+              <%= form.label :title %>
+              <%= form.text_field :title, required: true %>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="field-stack">
+                <%= form.label :author %>
+                <%= form.text_field :author %>
+              </div>
+              <div class="field-stack">
+                <%= form.label :publisher %>
+                <%= form.text_field :publisher %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% else %>
+        <div class="field-stack">
+          <%= form.label :title %>
+          <%= form.text_field :title, required: true %>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="field-stack">
+            <%= form.label :author %>
+            <%= form.text_field :author %>
+          </div>
+          <div class="field-stack">
+            <%= form.label :publisher %>
+            <%= form.text_field :publisher %>
+          </div>
+        </div>
+      <% end %>
+
       <div class="field-stack">
         <%= form.label :price, "Price (₩)" %>
         <%= form.number_field :price, step: "1", min: 0, placeholder: "15000" %>
       </div>
+
       <div class="field-stack">
-        <%= form.label :member_id, "Requesting member" %>
-        <%= form.select :member_id, options_for_select(member_options.map { |m| [m.display_name, m.id] }, book_request.member_id || current_user&.member&.id), include_blank: "Select member" %>
+        <%= form.label :comment, "Comment (신청 사유)" %>
+        <%= form.text_area :comment, rows: 3, placeholder: "이 책을 신청하는 이유를 간단히 적어주세요." %>
       </div>
-    </div>
 
-    <div class="field-stack">
-      <%= form.label :comment, "Comment (신청 사유)" %>
-      <%= form.text_area :comment, rows: 3, placeholder: "이 책을 신청하는 이유를 간단히 적어주세요." %>
-    </div>
+      <%= form.hidden_field :link_url %>
+      <%= form.hidden_field :cover_url %>
+      <%= form.hidden_field :fiscal_period_id, value: book_request.fiscal_period_id || FiscalPeriod.find_by(active: true)&.id %>
+      <%= form.hidden_field :request_status, value: book_request.request_status.presence || "Requested" %>
+      <%= form.hidden_field :requested_on, value: book_request.requested_on || Date.current %>
 
-    <%= form.hidden_field :link_url %>
-    <%= form.hidden_field :cover_url %>
-    <%= form.hidden_field :fiscal_period_id, value: book_request.fiscal_period_id || FiscalPeriod.find_by(active: true)&.id %>
-    <%= form.hidden_field :request_status, value: book_request.request_status.presence || "Requested" %>
-    <%= form.hidden_field :requested_on, value: book_request.requested_on || Date.current %>
-
-    <div class="button-row">
-      <%= form.submit submit_label %>
-      <%= link_to "Cancel", book_request.persisted? ? admin_book_request_path(book_request) : books_path, class: "button-link secondary" %>
+      <div class="button-row">
+        <%= form.submit submit_label %>
+        <%= link_to "Cancel", book_request.persisted? ? admin_book_request_path(book_request) : books_path, class: "button-link secondary" %>
+      </div>
     </div>
   </div>
 <% end %>
