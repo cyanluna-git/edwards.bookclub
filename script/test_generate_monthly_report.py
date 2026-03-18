@@ -400,5 +400,168 @@ class TestDateSorting(unittest.TestCase):
         self.assertIn("마지막", table.rows[7].cells[gmr.DESC_CELL_INDEX].text)
 
 
+def _create_tiny_png(path: Path) -> None:
+    """Create a minimal valid 1x1 white PNG file."""
+    import struct
+    import zlib
+
+    def _chunk(chunk_type: bytes, data: bytes) -> bytes:
+        c = chunk_type + data
+        crc = struct.pack(">I", zlib.crc32(c) & 0xFFFFFFFF)
+        return struct.pack(">I", len(data)) + c + crc
+
+    sig = b"\x89PNG\r\n\x1a\n"
+    ihdr = _chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
+    raw_row = b"\x00\xff\xff\xff"  # filter byte + RGB
+    idat = _chunk(b"IDAT", zlib.compress(raw_row))
+    iend = _chunk(b"IEND", b"")
+    path.write_bytes(sig + ihdr + idat + iend)
+
+
+class TestPhotoPagesBackwardCompat(unittest.TestCase):
+    """Photos field is optional — existing inputs without it must work identically."""
+
+    SAMPLE = {
+        "activities": [
+            {"date": "2026-02-11", "description": "도서 리뷰", "count": 2},
+        ],
+        "total": 2,
+        "submission_date": "2026-03-18",
+    }
+
+    def test_no_photos_field(self) -> None:
+        output_path = _run_main(self.SAMPLE)
+        doc = Document(str(output_path))
+        self.assertIsNotNone(doc)
+        # Only the original table content, no extra paragraphs with page breaks
+        self.assertEqual(len(doc.tables), 1)
+
+    def test_empty_photos_list(self) -> None:
+        data = {**self.SAMPLE, "photos": []}
+        output_path = _run_main(data)
+        doc = Document(str(output_path))
+        self.assertEqual(len(doc.tables), 1)
+
+
+class TestPhotoPages(unittest.TestCase):
+    """Test attendance photo page generation."""
+
+    SAMPLE_BASE = {
+        "activities": [
+            {"date": "2026-02-11", "description": "도서 리뷰", "count": 2},
+        ],
+        "total": 2,
+        "submission_date": "2026-03-18",
+    }
+
+    def test_local_file_photo_embedded(self) -> None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        img_path = tmp_dir / "test_photo.png"
+        _create_tiny_png(img_path)
+
+        data = {
+            **self.SAMPLE_BASE,
+            "photos": [
+                {
+                    "date": "2026-02-11",
+                    "meeting_title": "도서 리뷰 (동탄)",
+                    "file_path": str(img_path),
+                    "caption": "단체 사진",
+                },
+            ],
+        }
+        output_path = _run_main(data)
+        doc = Document(str(output_path))
+
+        # Should have at least one inline shape (the embedded image)
+        from docx.opc.constants import RELATIONSHIP_TYPE as RT
+
+        image_parts = [
+            rel.target_ref
+            for rel in doc.part.rels.values()
+            if "image" in rel.reltype
+        ]
+        self.assertGreater(len(image_parts), 0, "No image found in document")
+
+    def test_heading_contains_korean_date_and_title(self) -> None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        img_path = tmp_dir / "test_photo.png"
+        _create_tiny_png(img_path)
+
+        data = {
+            **self.SAMPLE_BASE,
+            "photos": [
+                {
+                    "date": "2026-02-11",
+                    "meeting_title": "도서 리뷰 (동탄)",
+                    "file_path": str(img_path),
+                },
+            ],
+        }
+        output_path = _run_main(data)
+        doc = Document(str(output_path))
+
+        # Find the bold heading paragraph
+        found = False
+        for para in doc.paragraphs:
+            if para.runs and para.runs[0].bold:
+                text = para.text
+                if "2026년 2월 11일" in text and "도서 리뷰 (동탄)" in text:
+                    found = True
+                    break
+        self.assertTrue(found, "Bold heading with Korean date and meeting title not found")
+
+    def test_caption_appears_in_document(self) -> None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        img_path = tmp_dir / "test_photo.png"
+        _create_tiny_png(img_path)
+
+        data = {
+            **self.SAMPLE_BASE,
+            "photos": [
+                {
+                    "date": "2026-02-11",
+                    "meeting_title": "도서 리뷰",
+                    "file_path": str(img_path),
+                    "caption": "참석자 단체 사진",
+                },
+            ],
+        }
+        output_path = _run_main(data)
+        doc = Document(str(output_path))
+
+        all_text = "\n".join(p.text for p in doc.paragraphs)
+        self.assertIn("참석자 단체 사진", all_text)
+
+    def test_missing_file_warns_no_crash(self) -> None:
+        data = {
+            **self.SAMPLE_BASE,
+            "photos": [
+                {
+                    "date": "2026-02-11",
+                    "meeting_title": "도서 리뷰",
+                    "file_path": "/nonexistent/photo.jpg",
+                },
+            ],
+        }
+        import io as _io
+
+        captured = _io.StringIO()
+        with patch("sys.stderr", captured):
+            output_path = _run_main(data)
+
+        self.assertTrue(output_path.exists())
+        self.assertIn("Warning", captured.getvalue())
+        self.assertIn("/nonexistent/photo.jpg", captured.getvalue())
+
+    def test_photos_not_a_list_raises(self) -> None:
+        data = {**self.SAMPLE_BASE, "photos": "not_a_list"}
+        output_path = _make_temp_output()
+        data["output_path"] = str(output_path)
+        with self.assertRaises(ValueError) as ctx:
+            gmr.validate_input(data)
+        self.assertIn("photos must be a list", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
