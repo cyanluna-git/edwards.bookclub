@@ -14,15 +14,15 @@
     </article>
     <article class="metric-card">
       <span class="muted">Your reserve total</span>
-      <strong><%= number_to_currency(@snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong>
+      <strong><%= number_to_currency(@snapshot.attendance_reserve_total, unit: "₩", precision: 0, format: "%n%u") %></strong>
     </article>
     <article class="metric-card">
       <span class="muted">Book spend</span>
-      <strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong>
+      <strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "₩", precision: 0, format: "%n%u") %></strong>
     </article>
     <article class="metric-card">
       <span class="muted">Balance</span>
-      <strong><%= number_to_currency(@snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+      <strong><%= number_to_currency(@snapshot.balance, unit: "₩", precision: 0, format: "%n%u") %></strong>
     </article>
   </section>
 
@@ -48,8 +48,8 @@
     <aside class="panel stack">
       <h2>Cash context</h2>
       <div class="stat-list">
-        <div><span>Additional payments</span><strong><%= number_to_currency(@snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
-        <div><span>Purchase total</span><strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Additional payments</span><strong><%= number_to_currency(@snapshot.additional_payment_total, unit: "₩", precision: 0, format: "%n%u") %></strong></div>
+        <div><span>Purchase total</span><strong><%= number_to_currency(@snapshot.purchased_book_total, unit: "₩", precision: 0, format: "%n%u") %></strong></div>
       </div>
       <p class="muted">This view is scoped to your own attendance and request history only.</p>
     </aside>

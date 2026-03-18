@@ -40,8 +40,8 @@
             </td>
             <td><span class="pill"><%= request.request_status.presence || "Requested" %></span></td>
             <td><%= request.requested_on&.iso8601 || "Not set" %></td>
-            <td><%= request.price ? number_to_currency(request.price, unit: "KRW ", precision: 0) : "Pending" %></td>
-            <td><%= request.additional_payment ? number_to_currency(request.additional_payment, unit: "KRW ", precision: 0) : "None" %></td>
+            <td><%= request.price ? number_to_currency(request.price, unit: "₩", precision: 0, format: "%n%u") : "Pending" %></td>
+            <td><%= request.additional_payment ? number_to_currency(request.additional_payment, unit: "₩", precision: 0, format: "%n%u") : "None" %></td>
           </tr>
         <% end %>
       </tbody>

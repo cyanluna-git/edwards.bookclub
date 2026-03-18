@@ -26,9 +26,9 @@
       <div><span>Author</span><span><%= @book_request.author.presence || "Not set" %></span></div>
       <div><span>Publisher</span><span><%= @book_request.publisher.presence || "Not set" %></span></div>
       <div><span>Rating</span><span><%= @book_request.rating.presence || "Not set" %></span></div>
-      <div><span>Price</span><span><%= @book_request.price ? number_to_currency(@book_request.price, unit: "KRW ", precision: 0) : "Not set" %></span></div>
-      <div><span>Additional payment</span><span><%= @book_request.additional_payment ? number_to_currency(@book_request.additional_payment, unit: "KRW ", precision: 0) : "Not set" %></span></div>
-      <div><span>Net cash effect</span><span><%= number_to_currency(@book_request.net_cash_effect, unit: "KRW ", precision: 0) %></span></div>
+      <div><span>Price</span><span><%= @book_request.price ? number_to_currency(@book_request.price, unit: "₩", precision: 0, format: "%n%u") : "Not set" %></span></div>
+      <div><span>Additional payment</span><span><%= @book_request.additional_payment ? number_to_currency(@book_request.additional_payment, unit: "₩", precision: 0, format: "%n%u") : "Not set" %></span></div>
+      <div><span>Net cash effect</span><span><%= number_to_currency(@book_request.net_cash_effect, unit: "₩", precision: 0, format: "%n%u") %></span></div>
     </div>
 
     <% if @book_request.comment.present? %>

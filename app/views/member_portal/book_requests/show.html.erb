@@ -20,8 +20,8 @@
       <div><span>Author</span><span><%= @book_request.author.presence || "Not set" %></span></div>
       <div><span>Publisher</span><span><%= @book_request.publisher.presence || "Not set" %></span></div>
       <div><span>Fiscal period</span><span><%= @book_request.fiscal_period&.name || "None" %></span></div>
-      <div><span>Price</span><span><%= @book_request.price ? number_to_currency(@book_request.price, unit: "KRW ", precision: 0) : "Admin pending" %></span></div>
-      <div><span>Additional payment</span><span><%= @book_request.additional_payment ? number_to_currency(@book_request.additional_payment, unit: "KRW ", precision: 0) : "None" %></span></div>
+      <div><span>Price</span><span><%= @book_request.price ? number_to_currency(@book_request.price, unit: "₩", precision: 0, format: "%n%u") : "Admin pending" %></span></div>
+      <div><span>Additional payment</span><span><%= @book_request.additional_payment ? number_to_currency(@book_request.additional_payment, unit: "₩", precision: 0, format: "%n%u") : "None" %></span></div>
     </div>
 
     <% if @book_request.comment.present? %>
