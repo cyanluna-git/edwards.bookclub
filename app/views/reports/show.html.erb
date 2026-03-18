@@ -141,11 +141,12 @@
       </div>
     </article>
 
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
     <article class="panel stack">
       <div class="section-title">
         <div>
           <h2>Attendance report</h2>
-          <p class="muted">Monthly trend and selected-month breakdown without admin workflow controls.</p>
+          <p class="muted">Monthly trend and breakdown.</p>
         </div>
         <p class="muted"><%= @dashboard.month_label %></p>
       </div>
@@ -232,32 +233,27 @@
       </div>
 
       <% if @dashboard.meeting_digests.any? %>
-        <div class="meeting-register-grid dense-register-grid">
+        <div class="stack" style="gap: 0.5rem;">
           <% @dashboard.meeting_digests.each do |digest| %>
-            <article class="meeting-register-card compact-register-card">
-              <div class="section-title compact">
-                <div>
-                  <h4><%= digest.meeting.title %></h4>
-                  <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border, #ddd); border-radius: 6px;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <strong style="font-size: 0.85rem;"><%= digest.meeting.title %></strong>
+                  <span class="location-pill tone-<%= digest.tone %>" style="font-size: 0.7rem;"><%= digest.meeting.location.presence || "미정" %></span>
                 </div>
-                <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
+                <p class="muted" style="font-size: 0.75rem; margin: 0;"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
               </div>
-              <div class="meeting-register-meta compact-register-meta">
+              <div style="display: flex; gap: 0.75rem; text-align: center; flex-shrink: 0;">
                 <div>
-                  <span class="muted">Attendees</span>
-                  <strong><%= digest.attendance_count %></strong>
+                  <span class="muted" style="font-size: 0.65rem; display: block;">Attendees</span>
+                  <strong style="font-size: 0.9rem;"><%= digest.attendance_count %></strong>
                 </div>
                 <div>
-                  <span class="muted">Photos</span>
-                  <strong><%= digest.photos.size %></strong>
+                  <span class="muted" style="font-size: 0.65rem; display: block;">Photos</span>
+                  <strong style="font-size: 0.9rem;"><%= digest.photos.size %></strong>
                 </div>
               </div>
-              <div class="attendee-list attendee-list-grid">
-                <% digest.attendees.each do |member| %>
-                  <span><%= member.display_name %></span>
-                <% end %>
-              </div>
-            </article>
+            </div>
           <% end %>
         </div>
       <% else %>
@@ -267,6 +263,7 @@
         </div>
       <% end %>
     </article>
+    </div>
 
     <article class="panel report-panel stack">
       <div class="section-title">
