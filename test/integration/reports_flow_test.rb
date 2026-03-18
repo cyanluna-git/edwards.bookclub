@@ -35,7 +35,7 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
     get reports_path
 
     assert_response :success
-    assert_match "Reporting room", response.body
+    assert_match "Reports", response.body
     assert_match "Meetup reviews", response.body
     assert_match "My Portal", response.body
     assert_no_match "Members", response.body
@@ -48,7 +48,7 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
     get reports_path
 
     assert_response :success
-    assert_match "Reporting room", response.body
+    assert_match "Reports", response.body
     assert_match "Open workspace", response.body
     assert_match "Members", response.body
   end

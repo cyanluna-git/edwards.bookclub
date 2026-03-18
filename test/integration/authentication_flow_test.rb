@@ -17,7 +17,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to reports_path
     follow_redirect!
     assert_response :success
-    assert_match "Reporting room", response.body
+    assert_match "Reports", response.body
 
     delete destroy_session_path
 
@@ -50,7 +50,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     follow_redirect!
 
     assert_response :success
-    assert_match "Reporting room", response.body
+    assert_match "Reports", response.body
 
     get admin_dashboard_path
 
