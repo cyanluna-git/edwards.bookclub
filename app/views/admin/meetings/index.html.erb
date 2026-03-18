@@ -19,6 +19,7 @@
     <table class="data-table">
       <thead>
         <tr>
+          <th style="width: 60px;"></th>
           <th>Meetup</th>
           <th>When</th>
           <th>Location</th>
@@ -29,7 +30,15 @@
       </thead>
       <tbody>
         <% @meetings.each do |meeting| %>
+          <% first_photo = meeting.meeting_photos.detect { |p| p.image.attached? } %>
           <tr>
+            <td>
+              <% if first_photo %>
+                <%= link_to admin_meeting_path(meeting) do %>
+                  <%= image_tag url_for(first_photo.image), alt: meeting.title, style: "width: 50px; height: 38px; object-fit: cover; border-radius: 4px;" %>
+                <% end %>
+              <% end %>
+            </td>
             <td>
               <strong><%= link_to meeting.title, admin_meeting_path(meeting) %></strong>
               <div class="muted"><%= meeting.fiscal_period&.name || "No fiscal period" %></div>
