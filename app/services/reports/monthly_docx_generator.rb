@@ -59,10 +59,15 @@ module Reports
 
     def build_photos(digests)
       digests.flat_map do |digest|
+        attendee_names = digest.attendees.map(&:display_name).join(", ")
+        location = digest.meeting.location.presence || "미정"
+
         digest.photos.map do |photo|
           {
             meeting_title: digest.meeting.title,
             meeting_date: digest.meeting.meeting_at.to_date.iso8601,
+            location: location,
+            attendees: attendee_names,
             source_url: photo.source_url,
             file_path: resolve_photo_path(photo),
             caption: photo.caption
