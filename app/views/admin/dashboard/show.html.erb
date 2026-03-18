@@ -293,7 +293,11 @@
           <% @dashboard.meeting_digests.each do |digest| %>
             <% digest.photos.each do |photo| %>
               <figure class="photo-card">
-                <%= image_tag(photo.source_url.presence || photo.file_path, alt: "#{digest.meeting.title} photo") %>
+                <% if photo.image.attached? %>
+                  <%= image_tag url_for(photo.image), alt: "#{digest.meeting.title} photo" %>
+                <% elsif photo.source_url.present? || photo.file_path.present? %>
+                  <%= image_tag(photo.source_url.presence || photo.file_path, alt: "#{digest.meeting.title} photo") %>
+                <% end %>
                 <figcaption>
                   <strong><%= digest.meeting.title %></strong>
                   <span><%= digest.meeting.location.presence || "미정" %> · <%= l(digest.meeting.meeting_at.to_date, format: :long) %></span>
