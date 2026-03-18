@@ -26,6 +26,7 @@ module Admin
       auto_assign_fiscal_period(@meeting)
 
       if @meeting.save
+        sync_attendees(@meeting)
         redirect_to admin_meeting_path(@meeting), notice: "Meetup created successfully."
       else
         render :new, status: :unprocessable_content
@@ -40,6 +41,7 @@ module Admin
       auto_assign_fiscal_period(@meeting)
 
       if @meeting.save
+        sync_attendees(@meeting)
         redirect_to admin_meeting_path(@meeting), notice: "Meetup updated successfully."
       else
         render :edit, status: :unprocessable_content
@@ -58,7 +60,20 @@ module Admin
     end
 
     def meeting_params
-      params.require(:meeting).permit(:title, :meeting_at, :location, :review, meeting_photos_attributes: [ :image, :caption, :sort_order ])
+      params.require(:meeting).permit(:title, :meeting_at, :location, :review, member_ids: [], meeting_photos_attributes: [ :image, :caption, :sort_order ])
+    end
+
+    def sync_attendees(meeting)
+      submitted_ids = (params.dig(:meeting, :member_ids) || []).map(&:to_i).reject(&:zero?)
+      existing_ids = meeting.meeting_attendances.pluck(:member_id)
+
+      # Add new
+      (submitted_ids - existing_ids).each do |mid|
+        meeting.meeting_attendances.create!(member_id: mid, reserve_exempt: false)
+      end
+
+      # Remove unchecked
+      meeting.meeting_attendances.where(member_id: existing_ids - submitted_ids).destroy_all
     end
 
     def auto_assign_fiscal_period(meeting)
@@ -71,6 +86,7 @@ module Admin
 
     def load_options
       @fiscal_period_options = FiscalPeriod.order(start_date: :desc)
+      @members_by_location = Member.where(active: true).ordered.group_by { |m| m.location.presence || "미정" }
     end
 
     def available_members_for(meeting)
