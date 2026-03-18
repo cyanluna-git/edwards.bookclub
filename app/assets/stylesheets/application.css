@@ -529,6 +529,9 @@ textarea {
 .report-portal {
   display: grid;
   gap: 1.25rem;
+  width: calc(100vw - 4rem);
+  max-width: none;
+  margin-left: calc(50% - 50vw + 2rem);
 }
 
 .report-portal-hero {
