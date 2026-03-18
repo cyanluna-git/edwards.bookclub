@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   get "/reports", to: "reports#show", as: :reports
   post "/reports/docx", to: "reports#generate_docx", as: :reports_docx
   resources :books, only: [:index]
+  resources :meetings, only: %i[index show new create edit update]
 
   get "/sign-in", to: "sessions#new", as: :new_session
   post "/sign-in", to: "sessions#create", as: :session

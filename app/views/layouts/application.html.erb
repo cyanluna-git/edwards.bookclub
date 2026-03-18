@@ -32,10 +32,10 @@
             <%= link_to "Home", root_path, class: "secondary" %>
             <%= link_to "Reports", reports_path, class: "secondary" %>
             <%= link_to "Books", books_path, class: "secondary" %>
+            <%= link_to "Meetups", meetings_path, class: "secondary" %>
             <% if can_manage_club? %>
               <%= link_to "Admin", admin_dashboard_path, class: "secondary" %>
               <%= link_to "Members", admin_members_path, class: "secondary" %>
-              <%= link_to "Meetups", admin_meetings_path, class: "secondary" %>
               <%= link_to "Settings", admin_fiscal_periods_path, class: "secondary" %>
             <% else %>
               <%= link_to "My Portal", member_root_path, class: "secondary" %>

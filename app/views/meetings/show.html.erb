@@ -1,0 +1,80 @@
+<section class="hero">
+  <p class="eyebrow">Meetup</p>
+  <h1><%= @meeting.title %></h1>
+  <p class="hero-copy">
+    모임 출석, 후기, 사진을 확인하세요.
+  </p>
+</section>
+
+<section class="detail-grid">
+  <article class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2>Meetup summary</h2>
+        <p class="muted"><%= @meeting.location.presence || "No location recorded" %></p>
+      </div>
+      <div class="button-row">
+        <% if can_manage_club? || @meeting.created_by == current_user %>
+          <%= link_to "Edit details", edit_meeting_path(@meeting), class: "button-link" %>
+        <% end %>
+        <% if can_manage_club? %>
+          <%= button_to "Delete meetup", admin_meeting_path(@meeting), method: :delete, class: "danger" %>
+        <% end %>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: <%= @photos.any? ? 'auto 1fr' : '1fr' %>; gap: 1.25rem; align-items: start;">
+      <% if @photos.any? %>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <% @photos.each_with_index do |photo, i| %>
+            <% if photo.image.attached? %>
+              <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
+            <% elsif photo.source_url.present? %>
+              <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="stack">
+        <div class="meta-list">
+          <div><span>Date and time</span><span><%= l(@meeting.meeting_at, format: :long) %></span></div>
+          <div><span>Fiscal period</span><span><%= @meeting.fiscal_period&.name || "None" %></span></div>
+          <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
+          <div><span>Photos</span><strong><%= @photos.size %></strong></div>
+        </div>
+
+        <% if @meeting.review.present? %>
+          <div class="field-stack">
+            <label>Review</label>
+            <div style="font-size: 0.9rem; color: var(--ink, #333); padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px;">
+              <%= simple_format(@meeting.review) %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </article>
+
+  <aside class="panel stack">
+    <div class="section-title">
+      <h2>Attendance (<%= @attendances.size %>)</h2>
+    </div>
+
+    <% if @attendances.any? %>
+      <div class="stack" style="gap: 0.3rem;">
+        <% @attendances.each do |attendance| %>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.5rem; border: 1px solid var(--border, #ddd); border-radius: 4px; font-size: 0.8rem;">
+            <strong style="flex: 1;"><%= attendance.member.korean_name %> <span class="muted"><%= attendance.member.english_name %></span></strong>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="muted" style="font-size: 0.8rem;">No attendees yet.</p>
+    <% end %>
+
+    <div style="margin-top: auto; padding-top: 0.75rem;">
+      <%= link_to "Back to meetups", meetings_path, class: "button-link secondary", style: "font-size: 0.8rem;" %>
+    </div>
+  </aside>
+</section>
