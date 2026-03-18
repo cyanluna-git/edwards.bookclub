@@ -6,20 +6,6 @@
   </p>
 </section>
 
-<% if @photos.any? %>
-  <section style="display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.5rem 0 1rem; scroll-snap-type: x mandatory;">
-    <% @photos.each do |photo| %>
-      <figure style="margin: 0; flex: 0 0 auto; scroll-snap-align: start;">
-        <% if photo.image.attached? %>
-          <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "height: 200px; border-radius: 8px; object-fit: cover; display: block;" %>
-        <% elsif photo.source_url.present? %>
-          <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "height: 200px; border-radius: 8px; object-fit: cover; display: block;" %>
-        <% end %>
-      </figure>
-    <% end %>
-  </section>
-<% end %>
-
 <section class="detail-grid">
   <article class="panel stack">
     <div class="section-title">
@@ -33,30 +19,46 @@
       </div>
     </div>
 
-    <div class="meta-list">
-      <div><span>Date and time</span><span><%= l(@meeting.meeting_at, format: :long) %></span></div>
-      <div><span>Fiscal period</span><span><%= @meeting.fiscal_period&.name || "None" %></span></div>
-      <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
-      <div><span>Attendance reserve</span><strong><%= number_to_currency(@attendances.sum { |a| a.effective_awarded_points }, unit: "₩", precision: 0) %></strong></div>
-      <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
-      <div><span>Photos</span><strong><%= @photos.size %></strong></div>
-    </div>
-
-    <% if @meeting.description.present? %>
-      <div class="field-stack">
-        <label>Description</label>
-        <div class="panel"><%= simple_format(@meeting.description) %></div>
-      </div>
-    <% end %>
-
-    <% if @meeting.review.present? %>
-      <div class="field-stack">
-        <label>Review</label>
-        <div style="font-size: 0.9rem; color: var(--ink, #333); padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px;">
-          <%= simple_format(@meeting.review) %>
+    <div style="display: grid; grid-template-columns: <%= @photos.any? ? 'auto 1fr' : '1fr' %>; gap: 1.25rem; align-items: start;">
+      <% if @photos.any? %>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <% @photos.each_with_index do |photo, i| %>
+            <% if photo.image.attached? %>
+              <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
+            <% elsif photo.source_url.present? %>
+              <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
+            <% end %>
+          <% end %>
         </div>
+      <% end %>
+
+      <div class="stack">
+        <div class="meta-list">
+          <div><span>Date and time</span><span><%= l(@meeting.meeting_at, format: :long) %></span></div>
+          <div><span>Fiscal period</span><span><%= @meeting.fiscal_period&.name || "None" %></span></div>
+          <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
+          <div><span>Attendance reserve</span><strong><%= number_to_currency(@attendances.sum { |a| a.effective_awarded_points }, unit: "₩", precision: 0) %></strong></div>
+          <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
+          <div><span>Photos</span><strong><%= @photos.size %></strong></div>
+        </div>
+
+        <% if @meeting.description.present? %>
+          <div class="field-stack">
+            <label>Description</label>
+            <div class="panel"><%= simple_format(@meeting.description) %></div>
+          </div>
+        <% end %>
+
+        <% if @meeting.review.present? %>
+          <div class="field-stack">
+            <label>Review</label>
+            <div style="font-size: 0.9rem; color: var(--ink, #333); padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px;">
+              <%= simple_format(@meeting.review) %>
+            </div>
+          </div>
+        <% end %>
       </div>
-    <% end %>
+    </div>
   </article>
 
   <aside class="panel stack">
