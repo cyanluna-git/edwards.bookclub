@@ -10,45 +10,73 @@
 <% end %>
 
 <%= form_with model: [:admin, meeting], local: true, multipart: true do |form| %>
-  <div class="stack" style="max-width: 600px; gap: 1rem;">
-    <div class="field-stack">
-      <%= form.label :title %>
-      <%= form.text_field :title, required: true, placeholder: "e.g. 260318 천안 독서모임(3월 2회차)" %>
-    </div>
+  <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="panel stack" style="padding: 1.5rem; gap: 1rem;">
       <div class="field-stack">
-        <%= form.label :meeting_at, "Date" %>
-        <%= form.date_field :meeting_at, value: (meeting.meeting_at || Date.current).to_date.iso8601, required: true %>
+        <%= form.label :title %>
+        <%= form.text_field :title, required: true, placeholder: "e.g. 260318 천안 독서모임(3월 2회차)" %>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="field-stack">
+          <%= form.label :meeting_at, "Date" %>
+          <%= form.date_field :meeting_at, value: (meeting.meeting_at || Date.current).to_date.iso8601, required: true %>
+        </div>
+        <div class="field-stack">
+          <%= form.label :location %>
+          <%= form.select :location, options_for_select(["동탄", "분당", "아산", "천안"], meeting.location), include_blank: "Select location" %>
+        </div>
       </div>
 
       <div class="field-stack">
-        <%= form.label :location %>
-        <%= form.select :location, options_for_select(["동탄", "분당", "아산", "천안"], meeting.location), include_blank: "Select location" %>
+        <%= form.label :review, "Review (후기)" %>
+        <%= form.text_area :review, placeholder: "모임 후기를 작성해주세요.", rows: 4 %>
+      </div>
+
+      <div class="field-stack">
+        <label>Photos</label>
+        <% if meeting.persisted? && meeting.meeting_photos.any? %>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <% meeting.meeting_photos.each do |photo| %>
+              <% if photo.image.attached? %>
+                <%= image_tag url_for(photo.image), alt: "photo", style: "width: 100px; height: 75px; object-fit: cover; border-radius: 6px;" %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+        <%= form.fields_for :meeting_photos, MeetingPhoto.new do |photo_form| %>
+          <%= photo_form.file_field :image, accept: "image/*", style: "font-size: 0.85rem;" %>
+        <% end %>
+        <p class="muted" style="margin-top: 0.25rem; font-size: 0.8rem;">jpg, png. More photos can be added after saving.</p>
+      </div>
+
+      <div class="button-row">
+        <%= form.submit submit_label %>
+        <%= link_to "Cancel", meeting.persisted? ? admin_meeting_path(meeting) : admin_meetings_path, class: "button-link secondary" %>
       </div>
     </div>
 
-    <div class="field-stack">
-      <label>Attendees</label>
+    <div class="panel stack" style="padding: 1rem; gap: 0.5rem; position: sticky; top: 1rem;">
+      <h3 style="font-size: 0.95rem; margin: 0;">Attendees</h3>
+      <input type="text" id="attendee-search" placeholder="Search..." style="font-size: 0.8rem; padding: 0.3rem 0.5rem;">
       <% attended_ids = meeting.persisted? ? meeting.meeting_attendances.pluck(:member_id) : [] %>
-      <div id="attendee-list" style="max-height: 240px; overflow-y: auto; border: 1px solid var(--border, #ddd); border-radius: 6px; padding: 0.5rem;">
-        <% location_order = ["동탄", "분당", "아산", "천안", "미정"] %>
-        <% location_order.each do |loc| %>
+      <div id="attendee-list" style="max-height: 400px; overflow-y: auto;">
+        <% ["동탄", "분당", "아산", "천안", "미정"].each do |loc| %>
           <% members = @members_by_location[loc] %>
           <% next unless members&.any? %>
           <div class="attendee-location-group" data-location="<%= loc %>" style="margin-bottom: 0.5rem;">
-            <div style="font-size: 0.7rem; font-weight: 600; color: var(--muted-text, #888); text-transform: uppercase; margin-bottom: 0.25rem;"><%= loc %></div>
+            <div style="font-size: 0.65rem; font-weight: 600; color: var(--muted-text, #888); text-transform: uppercase; margin-bottom: 0.15rem;"><%= loc %></div>
             <% members.each do |m| %>
-              <label style="display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; font-size: 0.85rem; cursor: pointer;" data-name="<%= "#{m.korean_name} #{m.english_name}".downcase %>">
+              <label style="display: flex; align-items: center; gap: 0.35rem; padding: 0.15rem 0; font-size: 0.8rem; cursor: pointer;" data-name="<%= "#{m.korean_name} #{m.english_name}".downcase %>">
                 <input type="checkbox" name="meeting[member_ids][]" value="<%= m.id %>" <%= "checked" if attended_ids.include?(m.id) %>>
                 <span><%= m.korean_name %></span>
-                <span class="muted" style="font-size: 0.75rem;"><%= m.english_name %></span>
+                <span class="muted" style="font-size: 0.7rem;"><%= m.english_name %></span>
               </label>
             <% end %>
           </div>
         <% end %>
       </div>
-      <input type="text" id="attendee-search" placeholder="Search member..." style="margin-top: 0.4rem; font-size: 0.85rem; padding: 0.3rem 0.5rem;">
       <script>
         document.getElementById('attendee-search').addEventListener('input', function() {
           var q = this.value.toLowerCase();
@@ -56,43 +84,15 @@
             el.style.display = el.dataset.name.includes(q) ? '' : 'none';
           });
         });
-        // When location dropdown changes, scroll to matching group
         var locSelect = document.getElementById('meeting_location');
         if (locSelect) {
           locSelect.addEventListener('change', function() {
-            var loc = this.value;
-            var group = document.querySelector('.attendee-location-group[data-location="' + loc + '"]');
+            var group = document.querySelector('.attendee-location-group[data-location="' + this.value + '"]');
             if (group) group.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
         }
       </script>
     </div>
 
-    <div class="field-stack">
-      <%= form.label :review, "Review (후기)" %>
-      <%= form.text_area :review, placeholder: "모임 후기를 작성해주세요.", rows: 4 %>
-    </div>
-
-    <div class="field-stack">
-      <label>Photos</label>
-      <% if meeting.persisted? && meeting.meeting_photos.any? %>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
-          <% meeting.meeting_photos.each do |photo| %>
-            <% if photo.image.attached? %>
-              <%= image_tag url_for(photo.image), alt: "photo", style: "width: 100px; height: 75px; object-fit: cover; border-radius: 6px;" %>
-            <% end %>
-          <% end %>
-        </div>
-      <% end %>
-      <%= form.fields_for :meeting_photos, MeetingPhoto.new do |photo_form| %>
-        <%= photo_form.file_field :image, accept: "image/*", style: "font-size: 0.85rem;" %>
-      <% end %>
-      <p class="muted" style="margin-top: 0.25rem; font-size: 0.8rem;">jpg, png. More photos can be added after saving.</p>
-    </div>
-
-    <div class="button-row">
-      <%= form.submit submit_label %>
-      <%= link_to "Cancel", meeting.persisted? ? admin_meeting_path(meeting) : admin_meetings_path, class: "button-link secondary" %>
-    </div>
   </div>
 <% end %>
