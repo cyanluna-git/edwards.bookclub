@@ -4,7 +4,7 @@ require "fileutils"
 
 module Reports
   class MonthlyDocxGenerator
-    SCRIPT_PATH = Rails.root.join("scripts/generate_monthly_docx.py").freeze
+    SCRIPT_PATH = Rails.root.join("script/generate_monthly_report.py").freeze
 
     class GenerationError < StandardError; end
 
