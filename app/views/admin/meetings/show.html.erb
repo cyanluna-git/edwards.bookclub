@@ -6,6 +6,20 @@
   </p>
 </section>
 
+<% if @photos.any? %>
+  <section style="display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.5rem 0 1rem; scroll-snap-type: x mandatory;">
+    <% @photos.each do |photo| %>
+      <figure style="margin: 0; flex: 0 0 auto; scroll-snap-align: start;">
+        <% if photo.image.attached? %>
+          <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "height: 200px; border-radius: 8px; object-fit: cover; display: block;" %>
+        <% elsif photo.source_url.present? %>
+          <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "height: 200px; border-radius: 8px; object-fit: cover; display: block;" %>
+        <% end %>
+      </figure>
+    <% end %>
+  </section>
+<% end %>
+
 <section class="detail-grid">
   <article class="panel stack">
     <div class="section-title">
@@ -35,30 +49,12 @@
       </div>
     <% end %>
 
-    <div class="field-stack">
-      <label>Review notes</label>
-      <%= form_with model: [:admin, @meeting], local: true do |form| %>
-        <%= form.text_area :review, placeholder: "Capture 후기, follow-ups, and meetup notes here." %>
-        <div class="button-row">
-          <%= form.submit "Save review" %>
+    <% if @meeting.review.present? %>
+      <div class="field-stack">
+        <label>Review</label>
+        <div style="font-size: 0.9rem; color: var(--ink, #333); padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px;">
+          <%= simple_format(@meeting.review) %>
         </div>
-      <% end %>
-    </div>
-
-    <% if @photos.any? %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.5rem;">
-        <% @photos.each do |photo| %>
-          <figure style="margin: 0; border-radius: 8px; overflow: hidden; background: var(--muted-bg, #f5f3ee);">
-            <% if photo.image.attached? %>
-              <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "width: 100%; height: 160px; object-fit: cover; display: block;" %>
-            <% elsif photo.source_url.present? %>
-              <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "width: 100%; height: 160px; object-fit: cover; display: block;" %>
-            <% end %>
-            <% if photo.caption.present? %>
-              <figcaption style="padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--muted-text, #666);"><%= photo.caption %></figcaption>
-            <% end %>
-          </figure>
-        <% end %>
       </div>
     <% end %>
   </article>
