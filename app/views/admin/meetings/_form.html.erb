@@ -39,10 +39,10 @@
           <div class="attendee-location-group" data-location="<%= loc %>" style="margin-bottom: 0.5rem;">
             <div style="font-size: 0.7rem; font-weight: 600; color: var(--muted-text, #888); text-transform: uppercase; margin-bottom: 0.25rem;"><%= loc %></div>
             <% members.each do |m| %>
-              <label style="display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; font-size: 0.85rem; cursor: pointer;" data-name="<%= m.display_name.downcase %>">
+              <label style="display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; font-size: 0.85rem; cursor: pointer;" data-name="<%= "#{m.korean_name} #{m.english_name}".downcase %>">
                 <input type="checkbox" name="meeting[member_ids][]" value="<%= m.id %>" <%= "checked" if attended_ids.include?(m.id) %>>
-                <span><%= m.display_name %></span>
-                <span class="muted" style="font-size: 0.7rem;"><%= m.member_role %></span>
+                <span><%= m.korean_name %></span>
+                <span class="muted" style="font-size: 0.75rem;"><%= m.english_name %></span>
               </label>
             <% end %>
           </div>
