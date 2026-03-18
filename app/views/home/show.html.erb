@@ -12,7 +12,7 @@
   <% if current_user.admin? %>
     <p><%= link_to "Open admin dashboard", admin_dashboard_path %></p>
     <p><%= link_to "Manage members", admin_members_path %></p>
-    <p><%= link_to "Manage meetings", admin_meetings_path %></p>
+    <p><%= link_to "Manage meetups", admin_meetings_path %></p>
     <p><%= link_to "Manage book requests", admin_book_requests_path %></p>
   <% else %>
     <p>Member-facing features will be added on top of this authenticated baseline.</p>

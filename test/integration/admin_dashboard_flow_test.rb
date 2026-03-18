@@ -36,7 +36,7 @@ class AdminDashboardFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Book club reporting room", response.body
     assert_match "Reserve leaderboard", response.body
-    assert_match "Meeting reviews", response.body
+    assert_match "Meetup reviews", response.body
     assert_match "March Meetup", response.body
     assert_match "March Follow-up", response.body
     assert_match "천안", response.body
