@@ -571,14 +571,9 @@ textarea {
 
 .report-portal-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 1.25rem;
   align-items: start;
-}
-
-.report-portal-feature,
-.report-full-span {
-  grid-column: 1 / -1;
 }
 
 .report-portal-attendance-grid {
