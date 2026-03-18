@@ -1,0 +1,61 @@
+<section class="hero">
+  <p class="eyebrow">Meetups</p>
+  <h1>독서모임 모임</h1>
+  <p class="hero-copy">
+    모임 일정과 출석, 후기, 사진을 한눈에 확인하세요.
+  </p>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Meetups</h2>
+      <p class="muted">Newest first, with attendance and photo counts visible at a glance.</p>
+    </div>
+    <%= link_to "New meetup", new_meeting_path, class: "button-link" %>
+  </div>
+
+  <% if @meetings.any? %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;"></th>
+          <th>Meetup</th>
+          <th>When</th>
+          <th>Location</th>
+          <th>Attendance</th>
+          <th>Photos</th>
+          <th>Review</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @meetings.each do |meeting| %>
+          <% first_photo = meeting.meeting_photos.detect { |p| p.image.attached? } %>
+          <tr>
+            <td>
+              <% if first_photo %>
+                <%= link_to meeting_path(meeting) do %>
+                  <%= image_tag url_for(first_photo.image), alt: meeting.title, style: "width: 50px; height: 38px; object-fit: cover; border-radius: 4px;" %>
+                <% end %>
+              <% end %>
+            </td>
+            <td>
+              <strong><%= link_to meeting.title, meeting_path(meeting) %></strong>
+              <div class="muted"><%= meeting.fiscal_period&.name || "No fiscal period" %></div>
+            </td>
+            <td><%= l(meeting.meeting_at, format: :long) %></td>
+            <td><%= meeting.location.presence || "No location" %></td>
+            <td><%= meeting.meeting_attendances.size %></td>
+            <td><%= meeting.meeting_photos.size %></td>
+            <td><%= meeting.review.present? ? "Yes" : "No" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div class="empty-state">
+      <h3>No meetups yet.</h3>
+      <p>Create the first meetup to start managing attendance and review notes.</p>
+    </div>
+  <% end %>
+</section>
