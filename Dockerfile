@@ -18,10 +18,14 @@ COPY docker/certs/zscaler_root.crt /usr/local/share/ca-certificates/zscaler_root
 
 # Install base packages
 RUN apt-get -o Acquire::Retries=5 update -qq && \
-    apt-get -o Acquire::Retries=5 install --no-install-recommends -y ca-certificates curl libjemalloc2 libvips sqlite3 && \
+    apt-get -o Acquire::Retries=5 install --no-install-recommends -y ca-certificates curl libjemalloc2 libvips sqlite3 python3 python3-pip && \
     update-ca-certificates && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# Install python-docx for DOCX report generation
+COPY requirements.txt ./
+RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
 ENV RAILS_ENV="production" \
