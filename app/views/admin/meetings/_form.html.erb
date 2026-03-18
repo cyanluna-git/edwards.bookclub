@@ -62,7 +62,7 @@
       <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
         <% meeting.meeting_photos.each do |photo| %>
           <% if photo.image.attached? %>
-            <%= image_tag url_for(photo.image.variant(resize_to_limit: [120, 120])), alt: photo.caption.presence || "Meetup photo", style: "border-radius: 4px;" %>
+            <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "border-radius: 4px;" %>
           <% end %>
         <% end %>
       </div>

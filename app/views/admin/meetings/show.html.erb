@@ -50,7 +50,7 @@
           <% @photos.each do |photo| %>
             <div style="position: relative;">
               <% if photo.image.attached? %>
-                <%= image_tag url_for(photo.image.variant(resize_to_limit: [120, 120])), alt: photo.caption.presence || "Meetup photo", style: "border-radius: 4px; object-fit: cover;" %>
+                <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "border-radius: 4px; object-fit: cover; width: 120px; height: 90px;" %>
               <% elsif photo.source_url.present? %>
                 <div style="width: 120px; height: 80px; background: var(--muted-bg, #eee); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--muted-text, #888);">URL</div>
               <% end %>
