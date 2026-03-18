@@ -22,9 +22,11 @@ module Admin
     def create
       @meeting = Meeting.new(meeting_params)
       @meeting.created_by ||= current_user
+      @meeting.reserve_exempt_default ||= false
+      auto_assign_fiscal_period(@meeting)
 
       if @meeting.save
-        redirect_to admin_meeting_path(@meeting), notice: "Meeting created successfully."
+        redirect_to admin_meeting_path(@meeting), notice: "Meetup created successfully."
       else
         render :new, status: :unprocessable_content
       end
@@ -34,8 +36,11 @@ module Admin
     end
 
     def update
-      if @meeting.update(meeting_params)
-        redirect_to admin_meeting_path(@meeting), notice: "Meeting updated successfully."
+      @meeting.assign_attributes(meeting_params)
+      auto_assign_fiscal_period(@meeting)
+
+      if @meeting.save
+        redirect_to admin_meeting_path(@meeting), notice: "Meetup updated successfully."
       else
         render :edit, status: :unprocessable_content
       end
@@ -53,7 +58,15 @@ module Admin
     end
 
     def meeting_params
-      params.require(:meeting).permit(:title, :legacy_title, :meeting_at, :location, :description, :review, :reserve_exempt_default, :fiscal_period_id, meeting_photos_attributes: [ :image, :caption, :sort_order ])
+      params.require(:meeting).permit(:title, :meeting_at, :location, :review, meeting_photos_attributes: [ :image, :caption, :sort_order ])
+    end
+
+    def auto_assign_fiscal_period(meeting)
+      return if meeting.meeting_at.blank?
+
+      period = FiscalPeriod.where("start_date <= ? AND end_date >= ?", meeting.meeting_at, meeting.meeting_at).first
+      period ||= FiscalPeriod.find_by(active: true)
+      meeting.fiscal_period = period
     end
 
     def load_options
