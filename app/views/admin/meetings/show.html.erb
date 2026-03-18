@@ -22,8 +22,10 @@
     <div class="meta-list">
       <div><span>Date and time</span><span><%= l(@meeting.meeting_at, format: :long) %></span></div>
       <div><span>Fiscal period</span><span><%= @meeting.fiscal_period&.name || "None" %></span></div>
-      <div><span>Default reserve behavior</span><span><%= @meeting.reserve_exempt_default? ? "Exempt by default" : "Reserve applies by default" %></span></div>
-      <div><span>Created by</span><span><%= @meeting.created_by&.email || "Unknown" %></span></div>
+      <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
+      <div><span>Attendance reserve</span><strong><%= number_to_currency(@attendances.sum { |a| a.effective_awarded_points }, unit: "₩", precision: 0) %></strong></div>
+      <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
+      <div><span>Photos</span><strong><%= @photos.size %></strong></div>
     </div>
 
     <% if @meeting.description.present? %>
@@ -67,55 +69,37 @@
   </article>
 
   <aside class="panel stack">
-    <h2>Snapshot</h2>
-    <div class="stat-list">
-      <div><span>Attendees</span><strong><%= @attendances.size %></strong></div>
-      <div><span>Reserve exempt</span><strong><%= @attendances.count(&:reserve_exempt?) %></strong></div>
-      <div><span>Attendance reserve</span><strong><%= number_to_currency(@attendances.sum { |attendance| attendance.effective_awarded_points }, unit: "₩", precision: 0) %></strong></div>
-      <div><span>Photo records</span><strong><%= @photos.size %></strong></div>
+    <div class="section-title">
+      <h2>Attendance (<%= @attendances.size %>)</h2>
     </div>
-    <div class="button-row">
-      <%= link_to "Back to meetups", admin_meetings_path, class: "button-link secondary" %>
+
+    <%= form_with model: [:admin, @meeting, @attendance], url: admin_meeting_attendances_path(@meeting), local: true, style: "display: flex; align-items: end; gap: 0.5rem; margin-bottom: 0.75rem;" do |form| %>
+      <div class="field-stack" style="flex: 1;">
+        <%= form.select :member_id, options_for_select(@available_members.map { |member| ["#{member.english_name} · #{member.member_role}", member.id] }), { include_blank: "Select member" }, style: "font-size: 0.85rem; width: 100%;" %>
+      </div>
+      <%= form.submit "Add", style: "white-space: nowrap; padding: 0.4rem 0.75rem; font-size: 0.85rem;" %>
+    <% end %>
+
+    <% if @attendances.any? %>
+      <div class="stack" style="gap: 0.3rem;">
+        <% @attendances.each do |attendance| %>
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.5rem; border: 1px solid var(--border, #ddd); border-radius: 4px; font-size: 0.8rem;">
+            <strong style="flex: 1;"><%= attendance.member.english_name %></strong>
+            <span class="muted" style="font-size: 0.7rem;"><%= attendance.member.member_role %></span>
+            <span style="font-size: 0.75rem;"><%= number_to_currency(attendance.effective_awarded_points, unit: "₩", precision: 0) %></span>
+            <% if attendance.reserve_exempt? %>
+              <span style="font-size: 0.65rem; background: #f0d36a; padding: 0.1rem 0.3rem; border-radius: 3px;">Exempt</span>
+            <% end %>
+            <%= button_to "×", admin_meeting_attendance_path(@meeting, attendance), method: :delete, class: "danger", style: "min-width: 0; padding: 0 0.3rem; font-size: 0.75rem; line-height: 1.4;" %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="muted" style="font-size: 0.8rem;">No attendees yet.</p>
+    <% end %>
+
+    <div style="margin-top: auto; padding-top: 0.75rem;">
+      <%= link_to "Back to meetups", admin_meetings_path, class: "button-link secondary", style: "font-size: 0.8rem;" %>
     </div>
   </aside>
-</section>
-
-<section class="panel stack">
-  <div class="section-title">
-    <h2>Attendance (<%= @attendances.size %>)</h2>
-  </div>
-
-  <%= form_with model: [:admin, @meeting, @attendance], url: admin_meeting_attendances_path(@meeting), local: true, style: "display: flex; align-items: end; gap: 0.5rem; margin-bottom: 1rem;" do |form| %>
-    <div class="field-stack" style="flex: 1;">
-      <%= form.label :member_id, "Add member", style: "font-size: 0.8rem;" %>
-      <%= form.select :member_id, options_for_select(@available_members.map { |member| ["#{member.english_name} · #{member.member_role}", member.id] }), { include_blank: "Select member" }, style: "font-size: 0.85rem; width: 100%;" %>
-    </div>
-    <%= form.submit "Add", style: "white-space: nowrap; padding: 0.45rem 1rem;" %>
-  <% end %>
-
-  <% if @attendances.any? %>
-    <div class="stack" style="gap: 0.35rem;">
-      <% @attendances.each do |attendance| %>
-        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0.6rem; border: 1px solid var(--border, #ddd); border-radius: 6px; font-size: 0.85rem;">
-          <strong style="min-width: 120px;"><%= attendance.member.english_name %></strong>
-          <span class="muted" style="min-width: 60px; font-size: 0.75rem;"><%= attendance.member.member_role %></span>
-          <span style="min-width: 70px; font-size: 0.8rem;"><%= number_to_currency(attendance.effective_awarded_points, unit: "₩", precision: 0) %></span>
-          <span class="muted" style="font-size: 0.75rem;"><%= attendance.award_source_label %></span>
-          <% if attendance.reserve_exempt? %>
-            <span style="font-size: 0.7rem; background: #f0d36a; padding: 0.1rem 0.4rem; border-radius: 3px;">Exempt</span>
-          <% end %>
-          <% if attendance.note.present? %>
-            <span class="muted" style="font-size: 0.75rem; flex: 1;"><%= attendance.note %></span>
-          <% end %>
-          <div style="margin-left: auto;">
-            <%= button_to "×", admin_meeting_attendance_path(@meeting, attendance), method: :delete, class: "danger", style: "min-width: 0; padding: 0 0.4rem; font-size: 0.8rem; line-height: 1.5;" %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <div class="empty-state">
-      <p class="muted">No attendees yet. Select a member above to add.</p>
-    </div>
-  <% end %>
 </section>
