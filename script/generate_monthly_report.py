@@ -8,7 +8,17 @@ Input JSON schema:
   ],
   "total": 23,
   "submission_date": "2026-03-16",
-  "output_path": "/path/to/output.docx"
+  "output_path": "/path/to/output.docx",
+  "photos": [
+    {
+      "date": "2026-02-11",
+      "meeting_title": "도서 리뷰 (동탄)",
+      "file_path": "/path/to/local/photo.jpg",
+      "source_url": "https://example.com/photo.jpg",
+      "caption": "단체 사진"
+    },
+    ...
+  ]
 }
 
 - date format: YYYY-MM-DD (ISO 8601)
@@ -17,16 +27,25 @@ Input JSON schema:
 - total: integer total participants across all activities
 - submission_date: YYYY-MM-DD
 - output_path: absolute or relative path for output file
+- photos (optional): list of attendance photo objects
+  - date: YYYY-MM-DD
+  - meeting_title: title for the photo heading
+  - file_path (optional): local file path to the image
+  - source_url (optional): HTTP URL to fetch the image from
+  - caption (optional): caption text below the image
 """
 
 from __future__ import annotations
 
+import io
 import json
 import sys
 from pathlib import Path
 from typing import Any
 
+import requests
 from docx import Document
+from docx.shared import Inches
 from docx.table import _Cell
 from docx.text.paragraph import Paragraph
 
@@ -113,6 +132,55 @@ def write_submission_date(table: Any, date_str: str) -> None:
         paragraph.add_run(formatted)
 
 
+def fetch_image(photo: dict[str, Any]) -> io.BytesIO | Path | None:
+    """Resolve a photo to a local Path or BytesIO from HTTP. Returns None on failure."""
+    file_path = photo.get("file_path")
+    if file_path:
+        p = Path(file_path)
+        if p.is_file():
+            return p
+        print(f"Warning: photo file not found: {file_path}", file=sys.stderr)
+        return None
+
+    source_url = photo.get("source_url")
+    if source_url:
+        try:
+            resp = requests.get(source_url, timeout=30)
+            resp.raise_for_status()
+            buf = io.BytesIO(resp.content)
+            return buf
+        except Exception as exc:
+            print(f"Warning: failed to fetch photo from {source_url}: {exc}", file=sys.stderr)
+            return None
+
+    print("Warning: photo has neither file_path nor source_url, skipping", file=sys.stderr)
+    return None
+
+
+def write_photo_pages(doc: Document, photos: list[dict[str, Any]]) -> None:
+    """Append attendance photo pages to the document."""
+    for photo in photos:
+        image = fetch_image(photo)
+        if image is None:
+            continue
+
+        doc.add_page_break()
+
+        date_str = photo.get("date", "")
+        meeting_title = photo.get("meeting_title", "")
+        heading_text = f"{format_date_korean(date_str)} {meeting_title}".strip() if date_str else meeting_title
+        heading_para = doc.add_paragraph()
+        run = heading_para.add_run(heading_text)
+        run.bold = True
+
+        image_arg = str(image) if isinstance(image, Path) else image
+        doc.add_picture(image_arg, width=Inches(6.5))
+
+        caption = photo.get("caption")
+        if caption:
+            doc.add_paragraph(caption)
+
+
 def validate_input(data: dict[str, Any]) -> None:
     """Validate input JSON data, raising ValueError on invalid input."""
     if "activities" not in data:
@@ -137,6 +205,10 @@ def validate_input(data: dict[str, Any]) -> None:
             if field not in act:
                 raise ValueError(f"Activity {i}: missing required field '{field}'")
 
+    photos = data.get("photos")
+    if photos is not None and not isinstance(photos, list):
+        raise ValueError("photos must be a list")
+
     output_dir = Path(data["output_path"]).parent
     if not output_dir.exists():
         raise ValueError(f"Output directory does not exist: {output_dir}")
@@ -157,6 +229,10 @@ def main() -> None:
     write_activities(table, activities)
     write_total(table, data["total"])
     write_submission_date(table, data["submission_date"])
+
+    photos = data.get("photos", [])
+    if photos:
+        write_photo_pages(doc, photos)
 
     output_path = Path(data["output_path"])
     doc.save(str(output_path))
