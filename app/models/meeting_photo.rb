@@ -1,6 +1,8 @@
 class MeetingPhoto < ApplicationRecord
   belongs_to :meeting
 
+  has_one_attached :image
+
   normalizes :source_url, :file_path, :caption, with: ->(value) { value&.strip }
 
   validates :sort_order, numericality: { only_integer: true }
@@ -10,8 +12,8 @@ class MeetingPhoto < ApplicationRecord
   private
 
   def asset_reference_present
-    return if source_url.present? || file_path.present?
+    return if image.attached? || source_url.present? || file_path.present?
 
-    errors.add(:base, "Photo needs either a source URL or file path")
+    errors.add(:base, "Photo needs an uploaded image, source URL, or file path")
   end
 end
