@@ -153,7 +153,7 @@
 
       <div class="metrics inline-metrics report-inline-metrics">
         <article class="metric-card">
-          <span class="muted">Selected month attendees</span>
+          <span class="muted">Total</span>
           <strong><%= @dashboard.location_breakdown.sum(&:count) %></strong>
         </article>
         <% @dashboard.location_breakdown.each do |point| %>

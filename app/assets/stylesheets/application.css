@@ -806,10 +806,16 @@ textarea {
   color: var(--ink);
 }
 
+.location-pill.tone-dongtan,
+.location-metric.tone-dongtan,
+.attendance-month-segment.tone-dongtan {
+  color: #fff;
+}
+
 .location-pill.tone-bundang,
 .location-metric.tone-bundang,
 .attendance-month-segment.tone-bundang {
-  color: #f8fbff;
+  color: #fff;
 }
 
 .attendance-trend-chart {
