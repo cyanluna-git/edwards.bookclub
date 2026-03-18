@@ -64,10 +64,18 @@ module Reports
             meeting_title: digest.meeting.title,
             meeting_date: digest.meeting.meeting_at.to_date.iso8601,
             source_url: photo.source_url,
-            file_path: photo.file_path,
+            file_path: resolve_photo_path(photo),
             caption: photo.caption
           }
         end
+      end
+    end
+
+    def resolve_photo_path(photo)
+      if photo.image.attached?
+        ActiveStorage::Blob.service.path_for(photo.image.key)
+      else
+        photo.file_path
       end
     end
   end

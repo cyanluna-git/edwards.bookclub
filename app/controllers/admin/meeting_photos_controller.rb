@@ -37,7 +37,7 @@ module Admin
     end
 
     def photo_params
-      params.require(:meeting_photo).permit(:source_url, :file_path, :caption, :sort_order)
+      params.require(:meeting_photo).permit(:source_url, :file_path, :caption, :sort_order, :image)
     end
   end
 end
