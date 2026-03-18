@@ -29,6 +29,46 @@
     </div>
 
     <div class="field-stack">
+      <label>Attendees</label>
+      <% attended_ids = meeting.persisted? ? meeting.meeting_attendances.pluck(:member_id) : [] %>
+      <div id="attendee-list" style="max-height: 240px; overflow-y: auto; border: 1px solid var(--border, #ddd); border-radius: 6px; padding: 0.5rem;">
+        <% location_order = ["동탄", "분당", "아산", "천안", "미정"] %>
+        <% location_order.each do |loc| %>
+          <% members = @members_by_location[loc] %>
+          <% next unless members&.any? %>
+          <div class="attendee-location-group" data-location="<%= loc %>" style="margin-bottom: 0.5rem;">
+            <div style="font-size: 0.7rem; font-weight: 600; color: var(--muted-text, #888); text-transform: uppercase; margin-bottom: 0.25rem;"><%= loc %></div>
+            <% members.each do |m| %>
+              <label style="display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0; font-size: 0.85rem; cursor: pointer;" data-name="<%= m.display_name.downcase %>">
+                <input type="checkbox" name="meeting[member_ids][]" value="<%= m.id %>" <%= "checked" if attended_ids.include?(m.id) %>>
+                <span><%= m.display_name %></span>
+                <span class="muted" style="font-size: 0.7rem;"><%= m.member_role %></span>
+              </label>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+      <input type="text" id="attendee-search" placeholder="Search member..." style="margin-top: 0.4rem; font-size: 0.85rem; padding: 0.3rem 0.5rem;">
+      <script>
+        document.getElementById('attendee-search').addEventListener('input', function() {
+          var q = this.value.toLowerCase();
+          document.querySelectorAll('#attendee-list label[data-name]').forEach(function(el) {
+            el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+          });
+        });
+        // When location dropdown changes, scroll to matching group
+        var locSelect = document.getElementById('meeting_location');
+        if (locSelect) {
+          locSelect.addEventListener('change', function() {
+            var loc = this.value;
+            var group = document.querySelector('.attendee-location-group[data-location="' + loc + '"]');
+            if (group) group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+      </script>
+    </div>
+
+    <div class="field-stack">
       <%= form.label :review, "Review (후기)" %>
       <%= form.text_area :review, placeholder: "모임 후기를 작성해주세요.", rows: 4 %>
     </div>
