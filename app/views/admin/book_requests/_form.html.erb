@@ -9,87 +9,76 @@
   </div>
 <% end %>
 
-<%= render "shared/aladin_lookup", lookup: @aladin_lookup, search_path: @aladin_search_path %>
+<% prefilled = book_request.title.present? && params[:prefill].present? %>
+
+<% unless prefilled %>
+  <%= render "shared/aladin_lookup", lookup: @aladin_lookup, search_path: @aladin_search_path %>
+<% end %>
 
 <%= form_with model: [:admin, book_request], local: true do |form| %>
-  <div class="detail-grid">
-    <div>
-      <% if book_request.remote_cover_url.present? %>
-        <div class="book-cover-preview">
-          <%= image_tag book_request.remote_cover_url, alt: "#{book_request.title.presence || 'Book'} cover" %>
+  <div class="stack" style="max-width: 600px; gap: 1rem;">
+    <% if book_request.remote_cover_url.present? %>
+      <div style="display: flex; gap: 1rem; align-items: start;">
+        <%= image_tag book_request.remote_cover_url, alt: "Cover", style: "width: 80px; border-radius: 6px;" %>
+        <div class="stack" style="flex: 1; gap: 0.75rem;">
+          <div class="field-stack">
+            <%= form.label :title %>
+            <%= form.text_field :title, required: true %>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="field-stack">
+              <%= form.label :author %>
+              <%= form.text_field :author %>
+            </div>
+            <div class="field-stack">
+              <%= form.label :publisher %>
+              <%= form.text_field :publisher %>
+            </div>
+          </div>
         </div>
-      <% end %>
+      </div>
+    <% else %>
       <div class="field-stack">
         <%= form.label :title %>
         <%= form.text_field :title, required: true %>
       </div>
-      <div class="field-stack">
-        <%= form.label :author %>
-        <%= form.text_field :author %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :publisher %>
-        <%= form.text_field :publisher %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :comment %>
-        <%= form.text_area :comment %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :link_url, "Purchase link" %>
-        <%= form.text_field :link_url %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :cover_url, "Cover link" %>
-        <%= form.text_field :cover_url %>
-      </div>
-    </div>
-    <div>
-      <div class="field-stack">
-        <label>Requesting member</label>
-        <div class="panel panel-inline-note">
-          <strong><%= book_request.member&.display_name || current_user&.member&.display_name || "Select a member below" %></strong>
-          <span class="muted">Saved request ownership follows the member field below.</span>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="field-stack">
+          <%= form.label :author %>
+          <%= form.text_field :author %>
         </div>
+        <div class="field-stack">
+          <%= form.label :publisher %>
+          <%= form.text_field :publisher %>
+        </div>
+      </div>
+    <% end %>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+      <div class="field-stack">
+        <%= form.label :price, "Price (₩)" %>
+        <%= form.number_field :price, step: "1", min: 0, placeholder: "15000" %>
       </div>
       <div class="field-stack">
         <%= form.label :member_id, "Requesting member" %>
-        <%= form.select :member_id, options_for_select([["Unlinked", ""]] + member_options.map { |member| [member.english_name, member.id] }, book_request.member_id) %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :fiscal_period_id, "Fiscal period" %>
-        <%= form.select :fiscal_period_id, options_for_select([["None", ""]] + fiscal_period_options.map { |period| [period.name, period.id] }, book_request.fiscal_period_id) %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :request_status, "Status" %>
-        <%= form.text_field :request_status, list: "book-request-status-options" %>
-        <datalist id="book-request-status-options">
-          <% status_options.each do |status| %>
-            <option value="<%= status %>">
-          <% end %>
-        </datalist>
-      </div>
-      <div class="field-stack">
-        <%= form.label :requested_on, "Requested on" %>
-        <%= form.date_field :requested_on %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :rating %>
-        <%= form.text_field :rating %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :price, "Purchase value" %>
-        <%= form.number_field :price, step: "1", min: 0 %>
-      </div>
-      <div class="field-stack">
-        <%= form.label :additional_payment %>
-        <%= form.number_field :additional_payment, step: "1", min: 0 %>
+        <%= form.select :member_id, options_for_select(member_options.map { |m| [m.display_name, m.id] }, book_request.member_id || current_user&.member&.id), include_blank: "Select member" %>
       </div>
     </div>
-  </div>
 
-  <div class="button-row">
-    <%= form.submit submit_label %>
-    <%= link_to "Cancel", book_request.persisted? ? admin_book_request_path(book_request) : admin_book_requests_path, class: "button-link secondary" %>
+    <div class="field-stack">
+      <%= form.label :comment, "Comment (신청 사유)" %>
+      <%= form.text_area :comment, rows: 3, placeholder: "이 책을 신청하는 이유를 간단히 적어주세요." %>
+    </div>
+
+    <%= form.hidden_field :link_url %>
+    <%= form.hidden_field :cover_url %>
+    <%= form.hidden_field :fiscal_period_id, value: book_request.fiscal_period_id || FiscalPeriod.find_by(active: true)&.id %>
+    <%= form.hidden_field :request_status, value: book_request.request_status.presence || "Requested" %>
+    <%= form.hidden_field :requested_on, value: book_request.requested_on || Date.current %>
+
+    <div class="button-row">
+      <%= form.submit submit_label %>
+      <%= link_to "Cancel", book_request.persisted? ? admin_book_request_path(book_request) : books_path, class: "button-link secondary" %>
+    </div>
   </div>
 <% end %>
