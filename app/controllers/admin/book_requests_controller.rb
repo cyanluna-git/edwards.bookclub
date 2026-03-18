@@ -1,6 +1,6 @@
 module Admin
   class BookRequestsController < BaseController
-    before_action :set_book_request, only: %i[show edit update]
+    before_action :set_book_request, only: %i[show edit update destroy]
     before_action :load_options, only: %i[index show new create edit update]
     before_action :prepare_aladin_lookup, only: %i[new create edit update]
 
@@ -49,6 +49,11 @@ module Admin
       else
         render :edit, status: :unprocessable_content
       end
+    end
+
+    def destroy
+      @book_request.destroy!
+      redirect_to books_path, notice: "Book request cancelled."
     end
 
     private
