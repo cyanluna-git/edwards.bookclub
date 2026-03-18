@@ -81,6 +81,12 @@ run_remote "docker run -d \
   ${IMAGE_NAME}"
 echo "  ✓ Container started"
 
+# ── Step 4b: Connect to nginx network ──────────────────────────
+echo ""
+echo "▶ Connecting to nginx network..."
+run_remote "docker network connect edwardsoqcinfra_server-network ${CONTAINER_NAME} 2>/dev/null || true"
+echo "  ✓ Network connected"
+
 # ── Step 5: Verify ─────────────────────────────────────────────
 echo ""
 echo "▶ Step 5/5: Verifying..."
