@@ -1,22 +1,96 @@
-<main>
-  <h1>Edwards Bookclub</h1>
-  <p>Signed in as <strong><%= current_user.email %></strong>.</p>
-  <p>Role: <%= current_user.role %></p>
+<section class="hero">
+  <p class="eyebrow">나에게 떠나는 여행</p>
+  <h1>Edwards 독서동호회</h1>
+  <p class="hero-copy">함께 읽고, 함께 나누고, 함께 성장하는 독서 모임입니다.</p>
+  <div class="button-row" style="margin-top: 1rem;">
+    <% if authenticated? %>
+      <%= link_to "Reports", reports_path, class: "button-link" %>
+      <%= link_to "Books", books_path, class: "button-link secondary" %>
+      <% if can_manage_club? %>
+        <%= link_to "Admin", admin_dashboard_path, class: "button-link secondary" %>
+      <% end %>
+    <% else %>
+      <%= link_to "로그인", new_session_path, class: "button-link" %>
+    <% end %>
+  </div>
+</section>
 
-  <% if current_member %>
-    <p>Linked member: <%= current_member.english_name %></p>
-  <% else %>
-    <p>No member profile is linked yet.</p>
-  <% end %>
+<section style="max-width: 900px; margin: 2rem auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
 
-  <% if current_user.admin? %>
-    <p><%= link_to "Open admin dashboard", admin_dashboard_path %></p>
-    <p><%= link_to "Manage members", admin_members_path %></p>
-    <p><%= link_to "Manage meetups", admin_meetings_path %></p>
-    <p><%= link_to "Manage book requests", admin_book_requests_path %></p>
-  <% else %>
-    <p>Member-facing features will be added on top of this authenticated baseline.</p>
-  <% end %>
+  <article class="panel stack" style="padding: 1.5rem;">
+    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+    <h2 style="font-size: 1.1rem;">적립금 관리</h2>
+    <p class="muted" style="font-size: 0.85rem; line-height: 1.6;">
+      모임에 참석하면 <strong>출석 적립금</strong>이 자동으로 쌓입니다.
+      적립금으로 도서를 구매할 수 있으며, 잔액은 <strong>Reports</strong> 페이지에서 확인할 수 있습니다.
+    </p>
+    <div style="background: var(--muted-bg, #f5f3ee); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; margin-top: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+        <span>모임 참석</span><strong>+₩5,000 ~ ₩10,000</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+        <span>도서 구매</span><strong>적립금에서 차감</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>잔액 확인</span><strong>Reports → Reserve leaderboard</strong>
+      </div>
+    </div>
+  </article>
 
-  <p><%= button_to "Sign out", destroy_session_path, method: :delete %></p>
-</main>
+  <article class="panel stack" style="padding: 1.5rem;">
+    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+    <h2 style="font-size: 1.1rem;">도서 신청</h2>
+    <p class="muted" style="font-size: 0.85rem; line-height: 1.6;">
+      읽고 싶은 책을 <strong>알라딘 검색</strong>으로 찾아서 바로 신청할 수 있습니다.
+      제목, 저자, 가격이 자동으로 채워지며, 신청 사유만 적으면 됩니다.
+    </p>
+    <div style="background: var(--muted-bg, #f5f3ee); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; margin-top: 0.5rem;">
+      <div style="margin-bottom: 0.3rem;"><strong>1.</strong> Books → Request a book</div>
+      <div style="margin-bottom: 0.3rem;"><strong>2.</strong> 알라딘에서 책 검색</div>
+      <div style="margin-bottom: 0.3rem;"><strong>3.</strong> "Use this book" 클릭 → 자동 채움</div>
+      <div><strong>4.</strong> 신청 사유 작성 → Create request</div>
+    </div>
+  </article>
+
+  <article class="panel stack" style="padding: 1.5rem;">
+    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✍️</div>
+    <h2 style="font-size: 1.1rem;">모임 후기 작성</h2>
+    <p class="muted" style="font-size: 0.85rem; line-height: 1.6;">
+      모임이 끝나면 <strong>후기와 사진</strong>을 남겨주세요.
+      참석자를 체크하고 사진을 첨부하면 월간 보고서에 자동으로 반영됩니다.
+    </p>
+    <div style="background: var(--muted-bg, #f5f3ee); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; margin-top: 0.5rem;">
+      <div style="margin-bottom: 0.3rem;"><strong>1.</strong> Meetups → New meetup</div>
+      <div style="margin-bottom: 0.3rem;"><strong>2.</strong> 제목, 날짜, 위치 입력</div>
+      <div style="margin-bottom: 0.3rem;"><strong>3.</strong> 참석자 체크 (지역별 자동 그룹)</div>
+      <div style="margin-bottom: 0.3rem;"><strong>4.</strong> 후기 작성 + 사진 첨부</div>
+      <div><strong>5.</strong> Create meetup</div>
+    </div>
+  </article>
+
+  <article class="panel stack" style="padding: 1.5rem;">
+    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔐</div>
+    <h2 style="font-size: 1.1rem;">로그인 안내</h2>
+    <p class="muted" style="font-size: 0.85rem; line-height: 1.6;">
+      회사 <strong>Microsoft 계정</strong>으로 로그인하세요.
+      "Sign in with Microsoft" 버튼을 클릭하면 자동으로 회원 프로필과 연결됩니다.
+    </p>
+    <div style="background: var(--muted-bg, #f5f3ee); border-radius: 6px; padding: 0.75rem; font-size: 0.8rem; margin-top: 0.5rem;">
+      <div style="margin-bottom: 0.3rem;">• Edwards Vacuum / Atlas Copco 계정 사용</div>
+      <div style="margin-bottom: 0.3rem;">• 별도 비밀번호 등록 불필요</div>
+      <div>• 문제 발생 시 동호회 관리자에게 문의</div>
+    </div>
+  </article>
+
+</section>
+
+<% if authenticated? %>
+  <section style="max-width: 900px; margin: 0 auto 2rem; text-align: center;">
+    <p class="muted" style="font-size: 0.85rem;">
+      <%= current_user.email %> 으로 로그인됨
+      <% if current_member %>
+        · <%= current_member.display_name %> (<%= current_member.location.presence || "미정" %>)
+      <% end %>
+    </p>
+  </section>
+<% end %>
