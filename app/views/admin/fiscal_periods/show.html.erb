@@ -17,7 +17,7 @@
       <div><span>Start date</span><span><%= @fiscal_period.start_date %></span></div>
       <div><span>End date</span><span><%= @fiscal_period.end_date %></span></div>
       <div><span>Status</span><span><%= @fiscal_period.active? ? "Active" : "Inactive" %></span></div>
-      <div><span>Meetings linked</span><span><%= @fiscal_period.meetings.count %></span></div>
+      <div><span>Meetups linked</span><span><%= @fiscal_period.meetings.count %></span></div>
       <div><span>Book requests linked</span><span><%= @fiscal_period.book_requests.count %></span></div>
     </div>
   </article>

@@ -4,7 +4,7 @@
       <p class="eyebrow">Club Reports</p>
       <h1>Reporting room</h1>
       <p class="hero-copy">
-        Read-only reserve standings, attendance activity, reviews, and meeting photos arranged for widescreen browsing.
+        Read-only reserve standings, attendance activity, reviews, and meetup photos arranged for widescreen browsing.
       </p>
     </div>
 
@@ -179,7 +179,7 @@
         <div class="stack">
           <div class="section-title">
             <h3>Monthly attendance by location</h3>
-            <span class="muted">Stacked by meeting location</span>
+            <span class="muted">Stacked by meetup location</span>
           </div>
           <% max_monthly_count = [@dashboard.monthly_attendance.map(&:count).max.to_i, 1].max %>
           <div class="attendance-trend-chart wide-attendance-chart">
@@ -232,7 +232,7 @@
           <% else %>
             <div class="empty-state">
               <h3>No attendance data for this month.</h3>
-              <p>Choose another month to inspect meeting activity.</p>
+              <p>Choose another month to inspect meetup activity.</p>
             </div>
           <% end %>
         </div>
@@ -241,8 +241,8 @@
 
     <article class="panel report-panel stack">
       <div class="section-title">
-        <h2>Meeting register</h2>
-        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meeting") %></span>
+        <h2>Meetup register</h2>
+        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meetup") %></span>
       </div>
 
       <% if @dashboard.meeting_digests.any? %>
@@ -276,8 +276,8 @@
         </div>
       <% else %>
         <div class="empty-state">
-          <h3>No meetings for this month.</h3>
-          <p>The meeting register will populate after attendance records exist in the selected month.</p>
+          <h3>No meetups for this month.</h3>
+          <p>The meetup register will populate after attendance records exist in the selected month.</p>
         </div>
       <% end %>
     </article>
@@ -305,7 +305,7 @@
       <% else %>
         <div class="empty-state">
           <h3>No photos for this month.</h3>
-          <p>Photos added to meetings will appear here.</p>
+          <p>Photos added to meetups will appear here.</p>
         </div>
       <% end %>
     </article>
@@ -313,7 +313,7 @@
     <section class="panel stack reviews-panel report-full-span">
       <div class="section-title">
         <div>
-          <h2>Meeting reviews</h2>
+          <h2>Meetup reviews</h2>
           <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
         </div>
         <p class="muted"><%= @dashboard.month_label %></p>
@@ -336,8 +336,8 @@
         </div>
       <% else %>
         <div class="empty-state">
-          <h3>No meeting reviews for this month.</h3>
-          <p>Reviews will show here when a meeting note is saved on the meeting record.</p>
+          <h3>No meetup reviews for this month.</h3>
+          <p>Reviews will show here when a meetup note is saved on the meetup record.</p>
         </div>
       <% end %>
     </section>

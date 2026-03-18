@@ -61,7 +61,7 @@
     <div class="stat-list">
       <div><span>Attendance rows</span><strong><%= @member.meeting_attendances.count %></strong></div>
       <div><span>Book requests</span><strong><%= @member.book_requests.count %></strong></div>
-      <div><span>Meetings attended</span><strong><%= @member.meetings.distinct.count %></strong></div>
+      <div><span>Meetups attended</span><strong><%= @member.meetings.distinct.count %></strong></div>
     </div>
 
     <div class="field-stack">
@@ -80,7 +80,7 @@
     </div>
 
     <div class="field-stack">
-      <label>Recent meetings</label>
+      <label>Recent meetups</label>
       <div class="panel">
         <% if @member.meetings.any? %>
           <ul>

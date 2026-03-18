@@ -4,7 +4,7 @@
       <p class="eyebrow"><%= can_manage_club? ? "Admin Dashboard" : "Club Reports" %></p>
       <h1>Book club reporting room</h1>
       <p class="hero-copy">
-        PBIX-style reserve standings, month-by-month attendance, meeting photos, and readable review notes from the Rails data model.
+        PBIX-style reserve standings, month-by-month attendance, meetup photos, and readable review notes from the Rails data model.
       </p>
     </section>
 
@@ -19,7 +19,7 @@
       <div class="button-row sidebar-actions">
         <% if can_manage_club? %>
           <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
-          <%= link_to "Meetings", admin_meetings_path, class: "button-link secondary" %>
+          <%= link_to "Meetups", admin_meetings_path, class: "button-link secondary" %>
           <%= link_to "Books", admin_book_requests_path, class: "button-link secondary" %>
           <%= link_to "Settings", admin_fiscal_periods_path, class: "button-link secondary" %>
         <% else %>
@@ -152,7 +152,7 @@
       <div class="section-title">
         <div>
           <h2>Attendance report</h2>
-          <p class="muted">Monthly attendance trend, selected-month breakdown, meeting register, and photo digest laid out for widescreen reading.</p>
+          <p class="muted">Monthly attendance trend, selected-month breakdown, meetup register, and photo digest laid out for widescreen reading.</p>
         </div>
         <p class="muted"><%= @dashboard.month_label %></p>
       </div>
@@ -174,7 +174,7 @@
     <div class="stack">
       <div class="section-title">
         <h3>Monthly attendance by location</h3>
-        <span class="muted">Stacked by meeting location</span>
+        <span class="muted">Stacked by meetup location</span>
       </div>
       <% max_monthly_count = [@dashboard.monthly_attendance.map(&:count).max.to_i, 1].max %>
       <div class="attendance-trend-chart">
@@ -227,7 +227,7 @@
       <% else %>
         <div class="empty-state">
           <h3>No attendance data for this month.</h3>
-          <p>Choose another month to inspect meeting activity.</p>
+          <p>Choose another month to inspect meetup activity.</p>
         </div>
       <% end %>
     </div>
@@ -236,8 +236,8 @@
   <div class="detail-grid register-grid">
     <div class="panel report-panel stack">
       <div class="section-title">
-        <h3>Meeting register</h3>
-        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meeting") %></span>
+        <h3>Meetup register</h3>
+        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meetup") %></span>
       </div>
       <% if @dashboard.meeting_digests.any? %>
         <div class="meeting-register-grid">
@@ -276,8 +276,8 @@
         </div>
       <% else %>
         <div class="empty-state">
-          <h3>No meetings for this month.</h3>
-          <p>The meeting register will populate after attendance records exist in the selected month.</p>
+          <h3>No meetups for this month.</h3>
+          <p>The meetup register will populate after attendance records exist in the selected month.</p>
         </div>
       <% end %>
     </div>
@@ -305,7 +305,7 @@
       <% else %>
         <div class="empty-state">
           <h3>No photos for this month.</h3>
-          <p>Photos added to meetings will appear here.</p>
+          <p>Photos added to meetups will appear here.</p>
         </div>
       <% end %>
     </div>
@@ -315,7 +315,7 @@
     <section class="panel stack reviews-panel">
       <div class="section-title">
         <div>
-          <h2>Meeting reviews</h2>
+          <h2>Meetup reviews</h2>
           <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
         </div>
         <p class="muted"><%= @dashboard.month_label %></p>
@@ -338,8 +338,8 @@
         </div>
       <% else %>
         <div class="empty-state">
-          <h3>No meeting reviews for this month.</h3>
-          <p>Reviews will show here when a meeting note is saved on the meeting record.</p>
+          <h3>No meetup reviews for this month.</h3>
+          <p>Reviews will show here when a meetup note is saved on the meetup record.</p>
         </div>
       <% end %>
     </section>
