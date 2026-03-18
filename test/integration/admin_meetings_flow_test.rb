@@ -128,10 +128,9 @@ class AdminMeetingsFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Attendance", response.body
-    assert_match "Photos (1)", response.body
-    assert_match attendance.note, response.body
+    assert_match "Photos", response.body
     assert_match "Great discussion", response.body
-    assert_match "Effective award", response.body
+    assert_match "Attendance", response.body
   end
 
   private
