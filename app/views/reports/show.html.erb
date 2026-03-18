@@ -23,7 +23,7 @@
     <%= form_with url: reports_docx_path, method: :post, local: true do |f| %>
       <%= f.hidden_field :fiscal_period_id, value: @filters[:fiscal_period_id] %>
       <%= f.hidden_field :month, value: @filters[:month] %>
-      <%= f.submit "Download DOCX", class: "button-link secondary", style: "width: 100%; font-size: 0.85rem;" %>
+      <%= f.submit "Download Monthly Report", class: "button-link secondary", style: "width: 100%; font-size: 0.85rem;" %>
     <% end %>
 
     <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border, #ddd);">

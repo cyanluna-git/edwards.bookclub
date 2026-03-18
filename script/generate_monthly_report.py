@@ -45,7 +45,7 @@ from typing import Any
 
 import requests
 from docx import Document
-from docx.shared import Inches
+from docx.shared import Inches, Pt
 from docx.table import _Cell
 from docx.text.paragraph import Paragraph
 
@@ -166,12 +166,25 @@ def write_photo_pages(doc: Document, photos: list[dict[str, Any]]) -> None:
 
         doc.add_page_break()
 
-        date_str = photo.get("date", "")
+        date_str = photo.get("meeting_date", "") or photo.get("date", "")
         meeting_title = photo.get("meeting_title", "")
+        location = photo.get("location", "")
+        attendees = photo.get("attendees", "")
+
         heading_text = f"{format_date_korean(date_str)} {meeting_title}".strip() if date_str else meeting_title
         heading_para = doc.add_paragraph()
         run = heading_para.add_run(heading_text)
         run.bold = True
+
+        if location:
+            loc_para = doc.add_paragraph()
+            loc_run = loc_para.add_run(f"장소: {location}")
+            loc_run.font.size = Pt(10)
+
+        if attendees:
+            att_para = doc.add_paragraph()
+            att_run = att_para.add_run(f"참석자: {attendees}")
+            att_run.font.size = Pt(10)
 
         image_arg = str(image) if isinstance(image, Path) else image
         doc.add_picture(image_arg, width=Inches(6.5))
