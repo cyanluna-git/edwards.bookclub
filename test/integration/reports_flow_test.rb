@@ -36,7 +36,7 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Reports", response.body
-    assert_match "Meetup reviews", response.body
+    assert_match "Meetups", response.body
     assert_match "My Portal", response.body
     assert_no_match "Members", response.body
     assert_no_match "Open workspace", response.body

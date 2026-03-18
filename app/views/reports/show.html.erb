@@ -228,102 +228,64 @@
 
     <article class="panel report-panel stack">
       <div class="section-title">
-        <h2>Meetup register</h2>
-        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meetup") %></span>
+        <h2>Meetups</h2>
+        <span class="muted"><%= pluralize(@dashboard.meeting_digests.size, "meetup") %> · <%= @dashboard.month_label %></span>
       </div>
 
       <% if @dashboard.meeting_digests.any? %>
-        <div class="stack" style="gap: 0.5rem;">
+        <div class="stack" style="gap: 0.75rem;">
           <% @dashboard.meeting_digests.each do |digest| %>
-            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border, #ddd); border-radius: 6px;">
-              <div style="flex: 1; min-width: 0;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                  <strong style="font-size: 0.85rem;"><%= digest.meeting.title %></strong>
-                  <span class="location-pill tone-<%= digest.tone %>" style="font-size: 0.7rem;"><%= digest.meeting.location.presence || "미정" %></span>
+            <div style="padding: 0.75rem; border: 1px solid var(--border, #ddd); border-radius: 6px;">
+              <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 0.5rem;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <strong style="font-size: 0.9rem;"><%= digest.meeting.title %></strong>
+                    <span class="location-pill tone-<%= digest.tone %>" style="font-size: 0.7rem;"><%= digest.meeting.location.presence || "미정" %></span>
+                  </div>
+                  <p class="muted" style="font-size: 0.75rem; margin: 0.15rem 0 0;"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
                 </div>
-                <p class="muted" style="font-size: 0.75rem; margin: 0;"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
-              </div>
-              <div style="display: flex; gap: 0.75rem; text-align: center; flex-shrink: 0;">
-                <div>
-                  <span class="muted" style="font-size: 0.65rem; display: block;">Attendees</span>
-                  <strong style="font-size: 0.9rem;"><%= digest.attendance_count %></strong>
-                </div>
-                <div>
-                  <span class="muted" style="font-size: 0.65rem; display: block;">Photos</span>
-                  <strong style="font-size: 0.9rem;"><%= digest.photos.size %></strong>
+                <div style="display: flex; gap: 0.75rem; text-align: center; flex-shrink: 0;">
+                  <div>
+                    <span class="muted" style="font-size: 0.65rem; display: block;">Attendees</span>
+                    <strong style="font-size: 0.9rem;"><%= digest.attendance_count %></strong>
+                  </div>
                 </div>
               </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--muted-text, #666); margin-bottom: 0.4rem;">
+                <% digest.attendees.each do |member| %>
+                  <span><%= member.display_name %></span>
+                <% end %>
+              </div>
+
+              <% if digest.meeting.review.present? %>
+                <div style="font-size: 0.8rem; color: var(--ink, #333); padding: 0.4rem 0.6rem; background: var(--muted-bg, #f5f3ee); border-radius: 4px; margin-bottom: 0.4rem;">
+                  <%= simple_format(digest.meeting.review) %>
+                </div>
+              <% end %>
+
+              <% if digest.photos.any? %>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                  <% digest.photos.each do |photo| %>
+                    <% if photo.image.attached? %>
+                      <%= image_tag url_for(photo.image.variant(resize_to_limit: [100, 80])), alt: photo.caption.presence || "photo", style: "border-radius: 4px; object-fit: cover; height: 60px;" %>
+                    <% elsif photo.source_url.present? %>
+                      <div style="width: 80px; height: 60px; background: var(--muted-bg, #eee); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--muted-text, #888);">IMG</div>
+                    <% end %>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
           <% end %>
         </div>
       <% else %>
         <div class="empty-state">
           <h3>No meetups for this month.</h3>
-          <p>The meetup register will populate after attendance records exist in the selected month.</p>
+          <p>Meetup cards will appear after attendance records exist.</p>
         </div>
       <% end %>
     </article>
     </div>
-
-    <article class="panel report-panel stack">
-      <div class="section-title">
-        <h2>Photo wall</h2>
-        <span class="muted"><%= @dashboard.month_label %></span>
-      </div>
-      <% photo_count = @dashboard.meeting_digests.sum { |digest| digest.photos.size } %>
-      <% if photo_count.positive? %>
-        <div class="photo-wall dense-photo-wall">
-          <% @dashboard.meeting_digests.each do |digest| %>
-            <% digest.photos.each do |photo| %>
-              <figure class="photo-card">
-                <%= image_tag(photo.source_url.presence || photo.file_path, alt: "#{digest.meeting.title} photo") %>
-                <figcaption>
-                  <strong><%= digest.meeting.title %></strong>
-                  <span><%= digest.meeting.location.presence || "미정" %> · <%= l(digest.meeting.meeting_at.to_date, format: :long) %></span>
-                </figcaption>
-              </figure>
-            <% end %>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="empty-state">
-          <h3>No photos for this month.</h3>
-          <p>Photos added to meetups will appear here.</p>
-        </div>
-      <% end %>
-    </article>
-
-    <section class="panel stack reviews-panel report-full-span">
-      <div class="section-title">
-        <div>
-          <h2>Meetup reviews</h2>
-          <p class="muted">Readable monthly review notes instead of dense table-cell text.</p>
-        </div>
-        <p class="muted"><%= @dashboard.month_label %></p>
-      </div>
-
-      <% if @dashboard.review_highlights.any? %>
-        <div class="review-grid">
-          <% @dashboard.review_highlights.each do |digest| %>
-            <article class="review-card">
-              <div class="section-title compact">
-                <div>
-                  <h3><%= digest.meeting.title %></h3>
-                  <p class="muted"><%= l(digest.meeting.meeting_at.to_date, format: :long) %></p>
-                </div>
-                <span class="location-pill tone-<%= digest.tone %>"><%= digest.meeting.location.presence || "미정" %></span>
-              </div>
-              <p><%= simple_format(digest.meeting.review) %></p>
-            </article>
-          <% end %>
-        </div>
-      <% else %>
-        <div class="empty-state">
-          <h3>No meetup reviews for this month.</h3>
-          <p>Reviews will show here when a meetup note is saved on the meetup record.</p>
-        </div>
-      <% end %>
-    </section>
   </section>
   </div>
 </section>
