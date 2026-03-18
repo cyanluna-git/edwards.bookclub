@@ -7,10 +7,8 @@
       <%= link_to "Request a book", new_admin_book_request_path, class: "button-link" %>
       <%= link_to "Manage requests", admin_book_requests_path, class: "button-link secondary" %>
     <% end %>
-    <% if current_member %>
-      <% unless can_manage_club? %>
-        <%= link_to "Request a book", new_member_book_request_path, class: "button-link" %>
-      <% end %>
+    <% if current_member && !can_manage_club? %>
+      <%= link_to "Request a book", new_member_book_request_path, class: "button-link" %>
       <%= link_to "My Requests", member_book_requests_path, class: "button-link secondary" %>
     <% end %>
   </div>
