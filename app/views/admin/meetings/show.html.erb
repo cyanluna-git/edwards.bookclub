@@ -42,6 +42,28 @@
         </div>
       <% end %>
     </div>
+
+    <div class="field-stack">
+      <label>Photos (<%= @photos.size %>)</label>
+      <% if @photos.any? %>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <% @photos.each do |photo| %>
+            <div style="position: relative;">
+              <% if photo.image.attached? %>
+                <%= image_tag url_for(photo.image.variant(resize_to_limit: [120, 120])), alt: photo.caption.presence || "Meeting photo", style: "border-radius: 4px; object-fit: cover;" %>
+              <% elsif photo.source_url.present? %>
+                <div style="width: 120px; height: 80px; background: var(--muted-bg, #eee); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--muted-text, #888);">URL</div>
+              <% end %>
+              <%= button_to "×", admin_meeting_photo_path(@meeting, photo), method: :delete, class: "danger", style: "position: absolute; top: -4px; right: -4px; min-width: 0; padding: 0 0.35rem; font-size: 0.75rem; line-height: 1.4;" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <%= form_with model: [:admin, @meeting, @photo], url: admin_meeting_photos_path(@meeting), local: true, multipart: true, style: "display: inline-flex; align-items: center; gap: 0.5rem;" do |form| %>
+        <%= form.file_field :image, accept: "image/*", style: "font-size: 0.85rem;" %>
+        <%= form.submit "Upload photo", class: "button-link secondary", style: "white-space: nowrap;" %>
+      <% end %>
+    </div>
   </article>
 
   <aside class="panel stack">
@@ -56,91 +78,6 @@
       <%= link_to "Back to meetings", admin_meetings_path, class: "button-link secondary" %>
     </div>
   </aside>
-</section>
-
-<section class="panel stack">
-  <div class="section-title">
-    <div>
-      <h2>Photo records</h2>
-      <p class="muted">Upload photos directly or provide URL/file-path references.</p>
-    </div>
-  </div>
-
-  <%= form_with model: [:admin, @meeting, @photo], url: admin_meeting_photos_path(@meeting), local: true, multipart: true, class: "inline-form" do |form| %>
-    <div class="field">
-      <%= form.label :image, "Upload image" %>
-      <%= form.file_field :image, accept: "image/*" %>
-    </div>
-    <div class="field">
-      <%= form.label :source_url, "Source URL" %>
-      <%= form.text_field :source_url, placeholder: "https://..." %>
-    </div>
-    <div class="field">
-      <%= form.label :file_path, "File path" %>
-      <%= form.text_field :file_path, placeholder: "/uploads/meeting-1.jpg" %>
-    </div>
-    <div class="field">
-      <%= form.label :caption %>
-      <%= form.text_field :caption %>
-    </div>
-    <div class="field">
-      <%= form.label :sort_order %>
-      <%= form.number_field :sort_order, value: @photo.sort_order %>
-    </div>
-    <div class="inline-actions">
-      <%= form.submit "Add photo" %>
-    </div>
-  <% end %>
-
-  <% if @photos.any? %>
-    <div class="stack">
-      <% @photos.each do |photo| %>
-        <article class="member-card">
-          <% if photo.image.attached? %>
-            <div class="photo-thumbnail">
-              <%= image_tag url_for(photo.image.variant(resize_to_limit: [200, 200])), alt: photo.caption.presence || "Meeting photo" %>
-            </div>
-          <% end %>
-          <%= form_with model: [:admin, @meeting, photo], url: admin_meeting_photo_path(@meeting, photo), method: :patch, local: true, multipart: true, class: "inline-form" do |form| %>
-            <div class="field">
-              <%= form.label :image, "Replace image" %>
-              <%= form.file_field :image, accept: "image/*" %>
-              <% if photo.image.attached? %>
-                <span class="muted">Currently attached: <%= photo.image.filename %></span>
-              <% end %>
-            </div>
-            <div class="field">
-              <%= form.label :source_url, "Source URL" %>
-              <%= form.text_field :source_url, value: photo.source_url %>
-            </div>
-            <div class="field">
-              <%= form.label :file_path, "File path" %>
-              <%= form.text_field :file_path, value: photo.file_path %>
-            </div>
-            <div class="field">
-              <%= form.label :caption %>
-              <%= form.text_field :caption, value: photo.caption %>
-            </div>
-            <div class="field">
-              <%= form.label :sort_order %>
-              <%= form.number_field :sort_order, value: photo.sort_order %>
-            </div>
-            <div class="inline-actions">
-              <%= form.submit "Save" %>
-            </div>
-          <% end %>
-          <div class="button-row">
-            <%= button_to "Remove", admin_meeting_photo_path(@meeting, photo), method: :delete, class: "danger" %>
-          </div>
-        </article>
-      <% end %>
-    </div>
-  <% else %>
-    <div class="empty-state">
-      <h3>No photo records yet.</h3>
-      <p>Add URL-backed or file-path-backed photo metadata above.</p>
-    </div>
-  <% end %>
 </section>
 
 <section class="panel stack">

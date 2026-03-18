@@ -53,7 +53,7 @@ module Admin
     end
 
     def meeting_params
-      params.require(:meeting).permit(:title, :legacy_title, :meeting_at, :location, :description, :review, :reserve_exempt_default, :fiscal_period_id)
+      params.require(:meeting).permit(:title, :legacy_title, :meeting_at, :location, :description, :review, :reserve_exempt_default, :fiscal_period_id, meeting_photos_attributes: [ :image, :caption, :sort_order ])
     end
 
     def load_options
