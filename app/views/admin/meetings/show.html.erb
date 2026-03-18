@@ -82,86 +82,40 @@
 
 <section class="panel stack">
   <div class="section-title">
-    <div>
-      <h2>Attendance</h2>
-      <p class="muted">Add attendees, mark reserve exemptions, and leave per-attendance notes.</p>
-    </div>
+    <h2>Attendance (<%= @attendances.size %>)</h2>
   </div>
 
-  <%= form_with model: [:admin, @meeting, @attendance], url: admin_meeting_attendances_path(@meeting), local: true, class: "inline-form" do |form| %>
-    <div class="field">
-      <%= form.label :member_id, "Add attendee" %>
-      <%= form.select :member_id, options_for_select(@available_members.map { |member| ["#{member.english_name} · #{member.member_role}", member.id] }), include_blank: "Select member" %>
+  <%= form_with model: [:admin, @meeting, @attendance], url: admin_meeting_attendances_path(@meeting), local: true, style: "display: flex; align-items: end; gap: 0.5rem; margin-bottom: 1rem;" do |form| %>
+    <div class="field-stack" style="flex: 1;">
+      <%= form.label :member_id, "Add member", style: "font-size: 0.8rem;" %>
+      <%= form.select :member_id, options_for_select(@available_members.map { |member| ["#{member.english_name} · #{member.member_role}", member.id] }), { include_blank: "Select member" }, style: "font-size: 0.85rem; width: 100%;" %>
     </div>
-    <div class="field">
-      <%= form.label :reserve_exempt, "Reserve exemption" %>
-      <%= form.select :reserve_exempt, options_for_select([["Reserve applies", false], ["Reserve exempt", true]], @attendance.reserve_exempt) %>
-    </div>
-    <div class="field">
-      <%= form.label :note %>
-      <%= form.text_field :note, placeholder: "Optional attendance note" %>
-    </div>
-    <div class="field">
-      <%= form.label :override_points, "Manual points override" %>
-      <%= form.number_field :override_points, min: 0, placeholder: "Blank = policy default" %>
-    </div>
-    <div class="inline-actions">
-      <%= form.submit "Add attendee" %>
-    </div>
+    <%= form.submit "Add", style: "white-space: nowrap; padding: 0.45rem 1rem;" %>
   <% end %>
 
   <% if @attendances.any? %>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Role</th>
-          <th>Reserve</th>
-          <th>Note</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @attendances.each do |attendance| %>
-          <tr>
-            <td><%= attendance.member.english_name %></td>
-            <td><%= attendance.member.member_role %></td>
-            <td>
-              <%= form_with model: [:admin, @meeting, attendance], url: admin_meeting_attendance_path(@meeting, attendance), method: :patch, local: true, class: "inline-form" do |form| %>
-                <div class="field">
-                  <%= form.label :reserve_exempt, "Reserve" %>
-                  <%= form.select :reserve_exempt, options_for_select([["Reserve applies", false], ["Reserve exempt", true]], attendance.reserve_exempt) %>
-                </div>
-                <div class="field">
-                  <%= form.label :override_points, "Override points" %>
-                  <%= form.number_field :override_points, min: 0, value: attendance.override_points %>
-                </div>
-                <div class="field">
-                  <%= form.label :note, "Attendance note" %>
-                  <%= form.text_field :note, value: attendance.note %>
-                </div>
-                <div class="inline-actions">
-                  <%= form.submit "Save" %>
-                </div>
-              <% end %>
-              <div class="meta-list compact-meta">
-                <div><span>Effective award</span><span><%= number_to_currency(attendance.effective_awarded_points, unit: "₩", precision: 0) %></span></div>
-                <div><span>Default snapshot</span><span><%= number_to_currency(attendance.awarded_points.to_i, unit: "₩", precision: 0) %></span></div>
-                <div><span>Source</span><span><%= attendance.award_source_label %></span></div>
-              </div>
-            </td>
-            <td><%= attendance.note.presence || "None" %></td>
-            <td>
-              <%= button_to "Remove", admin_meeting_attendance_path(@meeting, attendance), method: :delete, class: "danger" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+    <div class="stack" style="gap: 0.35rem;">
+      <% @attendances.each do |attendance| %>
+        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0.6rem; border: 1px solid var(--border, #ddd); border-radius: 6px; font-size: 0.85rem;">
+          <strong style="min-width: 120px;"><%= attendance.member.english_name %></strong>
+          <span class="muted" style="min-width: 60px; font-size: 0.75rem;"><%= attendance.member.member_role %></span>
+          <span style="min-width: 70px; font-size: 0.8rem;"><%= number_to_currency(attendance.effective_awarded_points, unit: "₩", precision: 0) %></span>
+          <span class="muted" style="font-size: 0.75rem;"><%= attendance.award_source_label %></span>
+          <% if attendance.reserve_exempt? %>
+            <span style="font-size: 0.7rem; background: #f0d36a; padding: 0.1rem 0.4rem; border-radius: 3px;">Exempt</span>
+          <% end %>
+          <% if attendance.note.present? %>
+            <span class="muted" style="font-size: 0.75rem; flex: 1;"><%= attendance.note %></span>
+          <% end %>
+          <div style="margin-left: auto;">
+            <%= button_to "×", admin_meeting_attendance_path(@meeting, attendance), method: :delete, class: "danger", style: "min-width: 0; padding: 0 0.4rem; font-size: 0.8rem; line-height: 1.5;" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
   <% else %>
     <div class="empty-state">
-      <h3>No attendees yet.</h3>
-      <p>Add the first attendee above.</p>
+      <p class="muted">No attendees yet. Select a member above to add.</p>
     </div>
   <% end %>
 </section>
