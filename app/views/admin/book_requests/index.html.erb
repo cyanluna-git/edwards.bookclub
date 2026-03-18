@@ -13,15 +13,15 @@
   </article>
   <article class="metric-card">
     <span class="muted">Filtered spend</span>
-    <strong><%= number_to_currency(@list_summary[:total_price], unit: "KRW ", precision: 0) %></strong>
+    <strong><%= number_to_currency(@list_summary[:total_price], unit: "₩", precision: 0, format: "%n%u") %></strong>
   </article>
   <article class="metric-card">
     <span class="muted">Additional payments</span>
-    <strong><%= number_to_currency(@list_summary[:total_additional_payment], unit: "KRW ", precision: 0) %></strong>
+    <strong><%= number_to_currency(@list_summary[:total_additional_payment], unit: "₩", precision: 0, format: "%n%u") %></strong>
   </article>
   <article class="metric-card">
     <span class="muted">Reserve balance</span>
-    <strong><%= number_to_currency(@reserve_snapshot.balance, unit: "KRW ", precision: 0) %></strong>
+    <strong><%= number_to_currency(@reserve_snapshot.balance, unit: "₩", precision: 0, format: "%n%u") %></strong>
   </article>
 </section>
 
@@ -74,9 +74,9 @@
     <% if @reserve_snapshot.fiscal_period %>
       <p class="muted">Based on <strong><%= @reserve_snapshot.fiscal_period.name %></strong>.</p>
       <div class="stat-list">
-        <div><span>Attendance reserve total</span><strong><%= number_to_currency(@reserve_snapshot.attendance_reserve_total, unit: "KRW ", precision: 0) %></strong></div>
-        <div><span>Purchased book total</span><strong><%= number_to_currency(@reserve_snapshot.purchased_book_total, unit: "KRW ", precision: 0) %></strong></div>
-        <div><span>Additional payment total</span><strong><%= number_to_currency(@reserve_snapshot.additional_payment_total, unit: "KRW ", precision: 0) %></strong></div>
+        <div><span>Attendance reserve total</span><strong><%= number_to_currency(@reserve_snapshot.attendance_reserve_total, unit: "₩", precision: 0, format: "%n%u") %></strong></div>
+        <div><span>Purchased book total</span><strong><%= number_to_currency(@reserve_snapshot.purchased_book_total, unit: "₩", precision: 0, format: "%n%u") %></strong></div>
+        <div><span>Additional payment total</span><strong><%= number_to_currency(@reserve_snapshot.additional_payment_total, unit: "₩", precision: 0, format: "%n%u") %></strong></div>
         <div><span>Attendance count</span><strong><%= @reserve_snapshot.attendance_count %></strong></div>
       </div>
       <p class="muted">Balance = reserves - purchased books + additional payments.</p>
@@ -122,9 +122,9 @@
             <td><%= request.member&.english_name || "Unlinked" %></td>
             <td><span class="pill"><%= request.request_status.presence || "No status" %></span></td>
             <td><%= request.requested_on&.iso8601 || "Not set" %></td>
-            <td><%= number_to_currency(request.price, unit: "KRW ", precision: 0) if request.price %></td>
-            <td><%= number_to_currency(request.additional_payment, unit: "KRW ", precision: 0) if request.additional_payment %></td>
-            <td><%= number_to_currency(request.net_cash_effect, unit: "KRW ", precision: 0) %></td>
+            <td><%= number_to_currency(request.price, unit: "₩", precision: 0, format: "%n%u") if request.price %></td>
+            <td><%= number_to_currency(request.additional_payment, unit: "₩", precision: 0, format: "%n%u") if request.additional_payment %></td>
+            <td><%= number_to_currency(request.net_cash_effect, unit: "₩", precision: 0, format: "%n%u") %></td>
           </tr>
         <% end %>
       </tbody>

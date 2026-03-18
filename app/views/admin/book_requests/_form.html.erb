@@ -68,7 +68,7 @@
 
       <div class="field-stack">
         <%= form.label :price, "Price (₩)" %>
-        <%= form.number_field :price, step: "1", min: 0, placeholder: "15000" %>
+        <%= form.number_field :price, step: "1", min: 0, placeholder: "15,000", value: book_request.price&.to_i %>
       </div>
 
       <div class="field-stack">
