@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   root "home#show"
   get "/reports", to: "reports#show", as: :reports
+  post "/reports/docx", to: "reports#generate_docx", as: :reports_docx
 
   get "/sign-in", to: "sessions#new", as: :new_session
   post "/sign-in", to: "sessions#create", as: :session

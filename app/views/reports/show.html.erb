@@ -44,6 +44,12 @@
         <%= link_to "Reset", reports_path, class: "button-link secondary" %>
       </div>
     <% end %>
+
+    <%= form_with url: reports_docx_path, method: :post, local: true, class: "report-toolbar-form" do |f| %>
+      <%= f.hidden_field :fiscal_period_id, value: @filters[:fiscal_period_id] %>
+      <%= f.hidden_field :month, value: @filters[:month] %>
+      <%= f.submit "Download DOCX", class: "button-link secondary" %>
+    <% end %>
   </section>
 
   <section class="metrics report-kpis">
