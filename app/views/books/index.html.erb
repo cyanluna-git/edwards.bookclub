@@ -3,11 +3,11 @@
   <h1>All book requests</h1>
   <p class="hero-copy">Browse books requested by all members.</p>
   <div class="button-row" style="margin-top: 0.5rem;">
-    <% if current_member %>
-      <%= link_to "Request a book", new_member_book_request_path, class: "button-link" %>
-    <% end %>
     <% if can_manage_club? %>
+      <%= link_to "Request a book", new_admin_book_request_path, class: "button-link" %>
       <%= link_to "Manage requests", admin_book_requests_path, class: "button-link secondary" %>
+    <% elsif current_member %>
+      <%= link_to "Request a book", new_member_book_request_path, class: "button-link" %>
     <% end %>
   </div>
 </section>
