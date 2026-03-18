@@ -9,7 +9,7 @@ OmniAuth.config.on_failure = proc { |env|
   Auth::CallbacksController.action(:failure).call(env)
 }
 
-if Rails.env.production?
+if Rails.env.production? && !ENV["SECRET_KEY_BASE_DUMMY"]
   %w[ENTRA_CLIENT_ID ENTRA_CLIENT_SECRET ENTRA_TENANT_ID].each do |key|
     raise "Missing required environment variable: #{key}" unless ENV[key].present?
   end
