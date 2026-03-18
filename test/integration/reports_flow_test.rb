@@ -53,6 +53,59 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
     assert_match "Members", response.body
   end
 
+  test "reports page shows download DOCX button" do
+    sign_in_as(@member_user)
+
+    get reports_path
+
+    assert_response :success
+    assert_match "Download DOCX", response.body
+  end
+
+  test "anonymous users cannot generate docx" do
+    post reports_docx_path, params: { fiscal_period_id: @period.id, month: "2026-03" }
+
+    assert_redirected_to new_session_path
+  end
+
+  test "generate_docx returns docx file on success" do
+    sign_in_as(@admin)
+
+    docx_path = Rails.root.join("tmp/reports/monthly_2026-03.docx")
+    FileUtils.mkdir_p(docx_path.dirname)
+    File.write(docx_path, "fake docx content")
+
+    original_new = Reports::MonthlyDocxGenerator.method(:new)
+    fake_generator = Object.new
+    fake_generator.define_singleton_method(:call) { docx_path }
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new) { |**_| fake_generator }
+
+    post reports_docx_path, params: { fiscal_period_id: @period.id, month: "2026-03" }
+
+    assert_response :success
+    assert_equal "application/vnd.openxmlformats-officedocument.wordprocessingml.document", response.content_type
+  ensure
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new, original_new) if original_new
+    FileUtils.rm_f(docx_path) if docx_path
+  end
+
+  test "generate_docx redirects with flash on generation error" do
+    sign_in_as(@admin)
+
+    original_new = Reports::MonthlyDocxGenerator.method(:new)
+    fake_generator = Object.new
+    fake_generator.define_singleton_method(:call) { raise Reports::MonthlyDocxGenerator::GenerationError, "python not found" }
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new) { |**_| fake_generator }
+
+    post reports_docx_path, params: { fiscal_period_id: @period.id, month: "2026-03" }
+
+    assert_redirected_to reports_path(fiscal_period_id: @period.id, month: "2026-03")
+    follow_redirect!
+    assert_match "DOCX", response.body
+  ensure
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new, original_new) if original_new
+  end
+
   private
 
   def sign_in_as(user)
