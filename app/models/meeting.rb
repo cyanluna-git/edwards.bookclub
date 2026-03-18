@@ -5,6 +5,7 @@ class Meeting < ApplicationRecord
   has_many :meeting_attendances, dependent: :delete_all
   has_many :members, through: :meeting_attendances
   has_many :meeting_photos, dependent: :delete_all
+  accepts_nested_attributes_for :meeting_photos, reject_if: ->(attrs) { attrs[:image].blank? && attrs[:source_url].blank? && attrs[:file_path].blank? }
 
   after_commit :refresh_attendance_awards_for_meeting_date_change, if: :saved_change_to_meeting_at?
 

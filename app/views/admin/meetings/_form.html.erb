@@ -9,7 +9,7 @@
   </div>
 <% end %>
 
-<%= form_with model: [:admin, meeting], local: true do |form| %>
+<%= form_with model: [:admin, meeting], local: true, multipart: true do |form| %>
   <div class="detail-grid">
     <div>
       <div class="field-stack">
@@ -54,6 +54,25 @@
         <%= form.text_area :review %>
       </div>
     </div>
+  </div>
+
+  <div class="field-stack">
+    <label>Photos</label>
+    <% if meeting.persisted? && meeting.meeting_photos.any? %>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <% meeting.meeting_photos.each do |photo| %>
+          <% if photo.image.attached? %>
+            <%= image_tag url_for(photo.image.variant(resize_to_limit: [120, 120])), alt: photo.caption.presence || "Meeting photo", style: "border-radius: 4px;" %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+    <%= form.fields_for :meeting_photos, MeetingPhoto.new do |photo_form| %>
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
+        <%= photo_form.file_field :image, accept: "image/*", style: "font-size: 0.85rem;" %>
+      </div>
+    <% end %>
+    <p class="muted" style="margin-top: 0.25rem; font-size: 0.8rem;">Attach a meeting photo (jpg, png). More photos can be added after saving.</p>
   </div>
 
   <div class="button-row">
