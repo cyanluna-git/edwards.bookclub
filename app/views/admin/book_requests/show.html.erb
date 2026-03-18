@@ -15,7 +15,7 @@
       </div>
       <div class="button-row">
         <%= link_to "Edit request", edit_admin_book_request_path(@book_request), class: "button-link" %>
-        <%= button_to "Cancel request", admin_book_request_path(@book_request), method: :delete, class: "danger", data: { turbo_confirm: "이 도서 신청을 취소하시겠습니까?" } %>
+        <%= button_to "Cancel request", admin_book_request_path(@book_request), method: :delete, class: "danger", form: { data: { turbo: false } }, onclick: "return confirm('이 도서 신청을 취소하시겠습니까?')" %>
         <%= link_to "Back to requests", books_path, class: "button-link secondary" %>
       </div>
     </div>
