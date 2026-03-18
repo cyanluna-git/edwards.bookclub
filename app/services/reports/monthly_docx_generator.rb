@@ -78,7 +78,12 @@ module Reports
 
     def resolve_photo_path(photo)
       if photo.image.attached?
-        ActiveStorage::Blob.service.path_for(photo.image.key)
+        blob_path = ActiveStorage::Blob.service.path_for(photo.image.key)
+        ext = File.extname(photo.image.filename.to_s).presence || ".jpg"
+        symlink_path = Rails.root.join("tmp/reports/photos/#{photo.image.key}#{ext}")
+        FileUtils.mkdir_p(symlink_path.dirname)
+        FileUtils.ln_sf(blob_path, symlink_path.to_s)
+        symlink_path.to_s
       else
         photo.file_path
       end
