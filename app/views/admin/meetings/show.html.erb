@@ -45,27 +45,22 @@
       <% end %>
     </div>
 
-    <div class="field-stack">
-      <label>Photos (<%= @photos.size %>)</label>
-      <% if @photos.any? %>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
-          <% @photos.each do |photo| %>
-            <div style="position: relative;">
-              <% if photo.image.attached? %>
-                <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "border-radius: 4px; object-fit: cover; width: 120px; height: 90px;" %>
-              <% elsif photo.source_url.present? %>
-                <div style="width: 120px; height: 80px; background: var(--muted-bg, #eee); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--muted-text, #888);">URL</div>
-              <% end %>
-              <%= button_to "×", admin_meeting_photo_path(@meeting, photo), method: :delete, class: "danger", style: "position: absolute; top: -4px; right: -4px; min-width: 0; padding: 0 0.35rem; font-size: 0.75rem; line-height: 1.4;" %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-      <%= form_with model: [:admin, @meeting, @photo], url: admin_meeting_photos_path(@meeting), local: true, multipart: true, style: "display: inline-flex; align-items: center; gap: 0.5rem;" do |form| %>
-        <%= form.file_field :image, accept: "image/*", style: "font-size: 0.85rem;" %>
-        <%= form.submit "Upload photo", class: "button-link secondary", style: "white-space: nowrap;" %>
-      <% end %>
-    </div>
+    <% if @photos.any? %>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.5rem;">
+        <% @photos.each do |photo| %>
+          <figure style="margin: 0; border-radius: 8px; overflow: hidden; background: var(--muted-bg, #f5f3ee);">
+            <% if photo.image.attached? %>
+              <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "width: 100%; height: 160px; object-fit: cover; display: block;" %>
+            <% elsif photo.source_url.present? %>
+              <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "width: 100%; height: 160px; object-fit: cover; display: block;" %>
+            <% end %>
+            <% if photo.caption.present? %>
+              <figcaption style="padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--muted-text, #666);"><%= photo.caption %></figcaption>
+            <% end %>
+          </figure>
+        <% end %>
+      </div>
+    <% end %>
   </article>
 
   <aside class="panel stack">
