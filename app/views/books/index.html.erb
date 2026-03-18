@@ -1,0 +1,53 @@
+<section class="hero">
+  <p class="eyebrow">Book Requests</p>
+  <h1>All book requests</h1>
+  <p class="hero-copy">Browse books requested by all members.</p>
+</section>
+
+<%= form_with url: books_path, method: :get, local: true, style: "display: flex; align-items: end; gap: 0.75rem; margin-bottom: 1.5rem;" do |form| %>
+  <div class="field-stack" style="min-width: 200px;">
+    <%= form.label :fiscal_period_id, "Fiscal period", style: "font-size: 0.8rem;" %>
+    <%= form.select :fiscal_period_id, options_for_select([["All periods", ""]] + @fiscal_period_options.map { |p| [p.name, p.id] }, params[:fiscal_period_id]), {}, style: "font-size: 0.85rem;" %>
+  </div>
+  <%= form.submit "Filter", style: "padding: 0.4rem 1rem; font-size: 0.85rem;" %>
+  <%= link_to "Reset", books_path, class: "button-link secondary", style: "font-size: 0.85rem;" %>
+<% end %>
+
+<p class="muted" style="margin-bottom: 1rem;"><%= @book_requests.size %> requests</p>
+
+<div class="stack" style="gap: 0.5rem;">
+  <% @book_requests.each do |br| %>
+    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border, #ddd); border-radius: 6px;">
+      <% if br.cover_url.present? %>
+        <%= image_tag br.cover_url, alt: br.title, style: "width: 45px; height: 65px; object-fit: cover; border-radius: 4px; flex-shrink: 0;" %>
+      <% else %>
+        <div style="width: 45px; height: 65px; background: var(--muted-bg, #eee); border-radius: 4px; flex-shrink: 0;"></div>
+      <% end %>
+
+      <div style="flex: 1; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <strong style="font-size: 0.9rem;"><%= br.title %></strong>
+          <% if br.link_url.present? %>
+            <%= link_to "알라딘", br.link_url, target: "_blank", style: "font-size: 0.7rem; color: var(--accent);" %>
+          <% end %>
+        </div>
+        <p class="muted" style="font-size: 0.75rem; margin: 0.1rem 0 0;">
+          <%= [br.author, br.publisher].compact_blank.join(" · ") %>
+        </p>
+      </div>
+
+      <div style="text-align: right; flex-shrink: 0; min-width: 80px;">
+        <strong style="font-size: 0.85rem;"><%= br.member&.display_name || "—" %></strong>
+        <p class="muted" style="font-size: 0.7rem; margin: 0;"><%= br.requested_on&.strftime("%Y-%m-%d") %></p>
+      </div>
+
+      <div style="min-width: 70px; text-align: right;">
+        <% if br.price.to_i > 0 %>
+          <span style="font-size: 0.8rem;"><%= number_to_currency(br.price, unit: "₩", precision: 0) %></span>
+        <% end %>
+      </div>
+
+      <span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; background: var(--muted-bg, #eee);"><%= br.request_status %></span>
+    </div>
+  <% end %>
+</div>
