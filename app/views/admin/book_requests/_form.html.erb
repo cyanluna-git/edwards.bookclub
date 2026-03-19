@@ -25,6 +25,11 @@
           <strong style="font-size: 0.9rem;"><%= requester.display_name %></strong>
           <span class="muted" style="font-size: 0.8rem;"><%= requester.email %></span>
           <span class="location-pill tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(requester.location.to_s, "neutral") %>" style="font-size: 0.7rem;"><%= requester.location.presence || "미정" %></span>
+          <% if @member_snapshot %>
+            <span style="margin-left: auto; font-size: 0.8rem; font-weight: 600; color: <%= @member_snapshot.balance.positive? ? 'var(--success, #2e7d32)' : 'var(--danger, #c62828)' %>;">
+              잔여 적립금 <%= number_to_currency(@member_snapshot.balance, unit: "₩", precision: 0) %>
+            </span>
+          <% end %>
         </div>
         <%= form.hidden_field :member_id, value: requester.id %>
       <% end %>

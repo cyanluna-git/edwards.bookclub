@@ -26,6 +26,7 @@ module Admin
         request_status: BookRequest.status_options.first
       )
       apply_prefill(@book_request)
+      load_member_balance(@book_request.member)
     end
 
     def create
@@ -35,12 +36,14 @@ module Admin
       if @book_request.save
         redirect_to admin_book_request_path(@book_request), notice: "Book request created successfully."
       else
+        load_member_balance(@book_request.member)
         render :new, status: :unprocessable_content
       end
     end
 
     def edit
       apply_prefill(@book_request)
+      load_member_balance(@book_request.member)
     end
 
     def update
@@ -120,6 +123,12 @@ module Admin
 
     def default_requesting_member
       current_user&.member
+    end
+
+    def load_member_balance(member)
+      return unless member
+
+      @member_snapshot = MemberPortal::DashboardSnapshot.new(member: member).call
     end
   end
 end
