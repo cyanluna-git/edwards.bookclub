@@ -18,6 +18,7 @@ module MemberPortal
         request_status: "Requested"
       )
       apply_prefill(@book_request)
+      load_member_balance
     end
 
     def create
@@ -27,12 +28,14 @@ module MemberPortal
       if @book_request.save
         redirect_to member_book_request_path(@book_request), notice: "Book request submitted successfully."
       else
+        load_member_balance
         render :new, status: :unprocessable_content
       end
     end
 
     def edit
       apply_prefill(@book_request)
+      load_member_balance
     end
 
     def update
@@ -93,6 +96,10 @@ module MemberPortal
 
     def prefill_params
       params.fetch(:prefill, ActionController::Parameters.new).permit(:title, :author, :publisher, :price, :cover_url, :link_url)
+    end
+
+    def load_member_balance
+      @member_snapshot = MemberPortal::DashboardSnapshot.new(member: current_member).call
     end
   end
 end

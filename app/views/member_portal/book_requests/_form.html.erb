@@ -44,6 +44,17 @@
           <span class="muted">This request will be saved under your member profile.</span>
         </div>
       </div>
+      <% if @member_snapshot %>
+        <div style="padding: 0.5rem 0.75rem; background: var(--muted-bg, #f5f3ee); border-radius: 6px; font-size: 0.85rem;">
+          <span>잔여 적립금</span>
+          <strong style="color: <%= @member_snapshot.balance.positive? ? 'var(--success, #2e7d32)' : 'var(--danger, #c62828)' %>;">
+            <%= number_to_currency(@member_snapshot.balance, unit: "₩", precision: 0) %>
+          </strong>
+          <span class="muted" style="font-size: 0.75rem;">
+            (출석 <%= number_to_currency(@member_snapshot.attendance_reserve_total, unit: "₩", precision: 0) %> − 도서 <%= number_to_currency(@member_snapshot.purchased_book_total, unit: "₩", precision: 0) %>)
+          </span>
+        </div>
+      <% end %>
       <div class="field-stack">
         <%= form.label :requested_on, "Request date" %>
         <%= form.date_field :requested_on %>
