@@ -1,0 +1,11 @@
+default_recipients: []
+  # - email: "recipient@edwardsvacuum.com"
+  #   name: "총무과 담당자"
+
+subject_template: "에드워즈 독서모임 %{month} 활동 보고서"
+
+body_template: |
+  <p>안녕하세요,</p>
+  <p>에드워즈 독서모임 %{month} 활동 보고서를 첨부합니다.</p>
+  <p>이번 달 모임 횟수: %{meeting_count}회<br>총 출석 인원: %{attendance_count}명</p>
+  <p>감사합니다.</p>

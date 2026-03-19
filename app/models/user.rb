@@ -63,4 +63,44 @@ class User < ApplicationRecord
 
     "Member"
   end
+
+  def update_microsoft_tokens!(credentials)
+    update!(
+      microsoft_access_token: credentials["token"],
+      microsoft_refresh_token: credentials["refresh_token"],
+      microsoft_token_expires_at: credentials["expires_at"] ? Time.at(credentials["expires_at"]) : nil
+    )
+  end
+
+  def microsoft_token_valid?
+    microsoft_access_token.present? &&
+      microsoft_token_expires_at.present? &&
+      microsoft_token_expires_at > 5.minutes.from_now
+  end
+
+  def refresh_microsoft_token!
+    raise "No refresh token available. Please sign in with Microsoft SSO again." unless microsoft_refresh_token.present?
+
+    client = OAuth2::Client.new(
+      ENV.fetch("ENTRA_CLIENT_ID"),
+      ENV.fetch("ENTRA_CLIENT_SECRET"),
+      site: "https://login.microsoftonline.com",
+      token_url: "/#{ENV.fetch('ENTRA_TENANT_ID')}/oauth2/v2.0/token"
+    )
+    token = OAuth2::AccessToken.from_hash(client,
+      "access_token" => microsoft_access_token,
+      "refresh_token" => microsoft_refresh_token
+    )
+    new_token = token.refresh!
+    update!(
+      microsoft_access_token: new_token.token,
+      microsoft_refresh_token: new_token.refresh_token || microsoft_refresh_token,
+      microsoft_token_expires_at: new_token.expires_at ? Time.at(new_token.expires_at) : nil
+    )
+  end
+
+  def ensure_valid_microsoft_token!
+    refresh_microsoft_token! unless microsoft_token_valid?
+    microsoft_access_token
+  end
 end

@@ -28,6 +28,49 @@ class ReportsController < ApplicationController
                 alert: "DOCX 생성에 실패했습니다. 다시 시도해 주세요."
   end
 
+  def create_outlook_draft
+    report_params = { fiscal_period_id: params[:fiscal_period_id], month: params[:month] }
+
+    unless current_user.microsoft_access_token.present?
+      redirect_to reports_path(**report_params), alert: "Microsoft 계정 연동이 필요합니다. SSO로 다시 로그인해 주세요."
+      return
+    end
+
+    fiscal_period = selected_fiscal_period
+    month = params[:month]
+    config = Reports::EmailConfig
+
+    docx_path = Reports::MonthlyDocxGenerator.new(fiscal_period:, month:).call
+
+    dashboard = Admin::DashboardSnapshot.new(fiscal_period:, month:).call
+
+    result = Integrations::MicrosoftGraph::DraftMailer.call(
+      user: current_user,
+      subject: config.subject(month:),
+      body_html: config.body_html(
+        month:,
+        meeting_count: dashboard.meeting_digests.size,
+        attendance_count: dashboard.location_breakdown.sum(&:count)
+      ),
+      to_recipients: config.default_recipients,
+      attachment_path: docx_path
+    )
+
+    if result.success
+      if result.web_link.present?
+        redirect_to result.web_link, allow_other_host: true
+      else
+        redirect_to reports_path(**report_params), notice: "Outlook 초안이 생성되었습니다. Outlook 초안함에서 확인 후 전송하세요."
+      end
+    else
+      redirect_to reports_path(**report_params), alert: "초안 생성 실패: #{result.error}"
+    end
+  rescue Reports::MonthlyDocxGenerator::GenerationError => e
+    Rails.logger.error("DOCX generation for Outlook draft failed: #{e.message}")
+    redirect_to reports_path(fiscal_period_id: params[:fiscal_period_id], month: params[:month]),
+                alert: "DOCX 생성에 실패했습니다. 다시 시도해 주세요."
+  end
+
   private
 
   def set_filters

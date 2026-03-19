@@ -26,6 +26,18 @@
       <%= f.submit "Download Monthly Report", class: "button-link secondary", style: "width: 100%; font-size: 0.85rem;" %>
     <% end %>
 
+    <% if can_manage_club? %>
+      <%= form_with url: reports_outlook_draft_path, method: :post, local: true do |f| %>
+        <%= f.hidden_field :fiscal_period_id, value: @filters[:fiscal_period_id] %>
+        <%= f.hidden_field :month, value: @filters[:month] %>
+        <% if current_user.microsoft_access_token.present? %>
+          <%= f.submit "Send to Outlook", class: "button-link", style: "width: 100%; font-size: 0.85rem; margin-top: 0.5rem;" %>
+        <% else %>
+          <p class="muted" style="font-size: 0.75rem; margin-top: 0.5rem; text-align: center;">Outlook 초안 생성을 사용하려면 SSO로 로그인하세요.</p>
+        <% end %>
+      <% end %>
+    <% end %>
+
     <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border, #ddd);">
 
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
