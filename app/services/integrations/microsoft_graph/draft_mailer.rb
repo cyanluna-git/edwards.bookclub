@@ -34,12 +34,14 @@ module Integrations
           web_link: draft["webLink"]
         )
       rescue OAuth2::Error, RuntimeError => e
+        Rails.logger.error("[Graph API] #{e.class}: #{e.message}")
         if !@retried && e.message.include?("refresh")
           @retried = true
           retry
         end
         Result.new(success: false, error: e.message)
       rescue StandardError => e
+        Rails.logger.error("[Graph API] #{e.class}: #{e.message}")
         Result.new(success: false, error: e.message)
       end
 
