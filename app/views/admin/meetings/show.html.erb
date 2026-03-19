@@ -24,7 +24,7 @@
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
           <% @photos.each_with_index do |photo, i| %>
             <% if photo.image.attached? %>
-              <%= image_tag url_for(photo.image), alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
+              <%= image_tag url_for(photo.image.variant(:medium)), alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
             <% elsif photo.source_url.present? %>
               <%= image_tag photo.source_url, alt: photo.caption.presence || "Meetup photo", style: "width: 280px; height: #{i == 0 ? 200 : 120}px; object-fit: cover; border-radius: 8px; display: block;" %>
             <% end %>
