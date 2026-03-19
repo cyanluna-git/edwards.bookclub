@@ -4,10 +4,12 @@ class Auth::CallbacksController < ApplicationController
   skip_before_action :verify_authenticity_token, only: :entra_id
 
   def entra_id
-    email = resolved_email(request.env["omniauth.auth"])
+    auth = request.env["omniauth.auth"]
+    email = resolved_email(auth)
     user = User.find_or_provision_from_sso(email)
 
     if user.present?
+      user.update_microsoft_tokens!(auth["credentials"]) if auth.dig("credentials", "token").present?
       reset_session
       session[:user_id] = user.id
       Rails.logger.info "[SSO] Sign-in via Entra ID: user_id=#{user.id} email=#{email}"

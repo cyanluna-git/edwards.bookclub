@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   root "home#show"
   get "/reports", to: "reports#show", as: :reports
   post "/reports/docx", to: "reports#generate_docx", as: :reports_docx
+  post "/reports/outlook-draft", to: "reports#create_outlook_draft", as: :reports_outlook_draft
   resources :books, only: [:index]
   resources :meetings, only: %i[index show new create edit update]
 
