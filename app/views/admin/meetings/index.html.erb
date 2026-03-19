@@ -35,7 +35,7 @@
             <td>
               <% if first_photo %>
                 <%= link_to admin_meeting_path(meeting) do %>
-                  <%= image_tag url_for(first_photo.image), alt: meeting.title, style: "width: 50px; height: 38px; object-fit: cover; border-radius: 4px;" %>
+                  <%= image_tag url_for(first_photo.image.variant(:thumb)), alt: meeting.title, style: "width: 50px; height: 38px; object-fit: cover; border-radius: 4px;" %>
                 <% end %>
               <% end %>
             </td>

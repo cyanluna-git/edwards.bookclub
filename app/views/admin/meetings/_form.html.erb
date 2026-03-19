@@ -40,7 +40,7 @@
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
             <% meeting.meeting_photos.each do |photo| %>
               <% if photo.image.attached? %>
-                <%= image_tag url_for(photo.image), alt: "photo", style: "width: 100px; height: 75px; object-fit: cover; border-radius: 6px;" %>
+                <%= image_tag url_for(photo.image.variant(:thumb)), alt: "photo", style: "width: 100px; height: 75px; object-fit: cover; border-radius: 6px;" %>
               <% end %>
             <% end %>
           </div>
