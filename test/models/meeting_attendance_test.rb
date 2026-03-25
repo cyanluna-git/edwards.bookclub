@@ -36,6 +36,21 @@ class MeetingAttendanceTest < ActiveSupport::TestCase
     assert_not_nil attendance.awarded_at
   end
 
+  test "secretary office alone does not upgrade awarded points" do
+    member = Member.create!(english_name: "Gerald Park", member_role: "정회원:총무", location: "아산", active: true)
+    member.member_office_assignments.create!(
+      office_type: "secretary",
+      effective_from: Date.new(2026, 1, 1)
+    )
+    meeting = Meeting.create!(title: "Secretary Meetup", meeting_at: Time.zone.parse("2026-03-25 19:00:00"), reserve_exempt_default: false, fiscal_period: @period)
+
+    attendance = MeetingAttendance.create!(meeting:, member:, reserve_exempt: false)
+
+    assert_equal 5000, attendance.awarded_points
+    assert_equal "정회원", attendance.awarded_policy_role
+    assert_equal "정회원", attendance.award_source_label
+  end
+
   test "sets awarded points to zero when reserve exempt" do
     member = Member.create!(english_name: "Hannah Lee", member_role: "정회원", active: true)
     meeting = Meeting.create!(title: "Guest Meetup", meeting_at: Time.zone.parse("2026-03-10 19:00:00"), reserve_exempt_default: false, fiscal_period: @period)

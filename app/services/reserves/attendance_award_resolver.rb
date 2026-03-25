@@ -18,7 +18,7 @@ module Reserves
       return exempt_result if @attendance.reserve_exempt?
 
       meeting_date = @attendance.meeting&.meeting_at&.to_date || Date.current
-      office_labels = @attendance.member&.office_labels_on(meeting_date).to_a
+      office_labels = @attendance.member&.reserve_office_labels_on(meeting_date).to_a
       policy_role = @attendance.member&.reserve_policy_role_on(meeting_date) || "정회원"
       awarded_points = resolved_policy_points(policy_role, meeting_date)
       effective_points = @attendance.override_points.presence || awarded_points
