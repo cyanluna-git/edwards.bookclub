@@ -1,0 +1,13 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1>Edit office assignment</h1>
+  <p class="hero-copy">Adjust dates, location, or office type while preserving effective-dated history.</p>
+</section>
+
+<section class="panel stack">
+  <%= render "form",
+    office_assignment: @office_assignment,
+    form_url: admin_office_assignment_path(@office_assignment),
+    form_method: :patch,
+    submit_label: "Update assignment" %>
+</section>

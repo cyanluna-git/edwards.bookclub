@@ -1,0 +1,13 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1>New office assignment</h1>
+  <p class="hero-copy">Create an effective-dated office record for a member.</p>
+</section>
+
+<section class="panel stack">
+  <%= render "form",
+    office_assignment: @office_assignment,
+    form_url: admin_office_assignments_path,
+    form_method: :post,
+    submit_label: "Create assignment" %>
+</section>

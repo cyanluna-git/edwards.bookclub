@@ -1,0 +1,56 @@
+<% if office_assignment.errors.any? %>
+  <div class="errors">
+    <h3><%= pluralize(office_assignment.errors.count, "issue") %> blocked this save</h3>
+    <ul>
+      <% office_assignment.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with url: form_url, method: form_method, scope: :office_assignment, local: true do |form| %>
+  <div class="detail-grid">
+    <div>
+      <div class="field-stack">
+        <%= form.label :member_id, "Member" %>
+        <%= form.select :member_id, options_for_select(@member_options, office_assignment.member_id), { include_blank: "Select member" }, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :office_type, "Office type" %>
+        <%= form.select :office_type, options_for_select(@office_type_options, office_assignment.office_type), { include_blank: "Select office type" }, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :location %>
+        <%= form.text_field :location, value: office_assignment.location, placeholder: "Required for site leader only" %>
+      </div>
+    </div>
+
+    <div>
+      <div class="field-stack">
+        <%= form.label :effective_from %>
+        <%= form.date_field :effective_from, value: office_assignment.effective_from&.iso8601, required: true %>
+      </div>
+
+      <div class="field-stack">
+        <%= form.label :effective_to %>
+        <%= form.date_field :effective_to, value: office_assignment.effective_to&.iso8601 %>
+      </div>
+
+      <div class="panel">
+        <strong>Reserve effect</strong>
+        <p class="muted" style="margin: 0.5rem 0 0;">
+          `회장` and `지역 리더` affect reserve bonus logic.
+          `총무` stays visible in assignment history but does not raise reserve points by itself.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-row" style="margin-top: 1rem;">
+    <%= form.submit submit_label %>
+    <%= link_to "Cancel", admin_office_assignments_path(member_id: office_assignment.member_id), class: "button-link secondary" %>
+  </div>
+<% end %>
