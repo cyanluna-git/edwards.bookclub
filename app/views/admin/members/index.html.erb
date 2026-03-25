@@ -14,7 +14,9 @@
           <h2>Find members</h2>
           <p class="muted">Search by name, email, department, role, or location.</p>
         </div>
-        <%= link_to "New member", new_admin_member_path, class: "button-link" %>
+        <% if can_manage_members? %>
+          <%= link_to "New member", new_admin_member_path, class: "button-link" %>
+        <% end %>
       </div>
 
       <%= form_with url: admin_members_path, method: :get, local: true do |form| %>
@@ -98,7 +100,13 @@
                 <tr>
                   <td>
                     <div class="member-primary">
-                      <strong><%= link_to member.english_name, admin_member_path(member) %></strong>
+                      <strong>
+                        <% if can_manage_club? %>
+                          <%= link_to member.english_name, admin_member_path(member) %>
+                        <% else %>
+                          <%= member.english_name %>
+                        <% end %>
+                      </strong>
                       <span class="pill <%= member.active? ? "active" : "inactive" %>"><%= member.active? ? "Active" : "Inactive" %></span>
                     </div>
                     <div class="member-subline">
@@ -139,15 +147,19 @@
                     </div>
                   </td>
                   <td>
-                    <div class="action-cluster">
-                      <%= link_to "View", admin_member_path(member), class: "button-link secondary compact-button" %>
-                      <%= link_to "Edit", edit_admin_member_path(member), class: "button-link secondary compact-button" %>
-                      <% if member.active? %>
-                        <%= button_to "Inactive", deactivate_admin_member_path(member), method: :patch, class: "danger compact-button" %>
-                      <% else %>
-                        <%= button_to "Reactivate", reactivate_admin_member_path(member), method: :patch, class: "warn compact-button" %>
-                      <% end %>
-                    </div>
+                    <% if can_manage_club? %>
+                      <div class="action-cluster">
+                        <%= link_to "View", admin_member_path(member), class: "button-link secondary compact-button" %>
+                        <%= link_to "Edit", edit_admin_member_path(member), class: "button-link secondary compact-button" %>
+                        <% if member.active? %>
+                          <%= button_to "Inactive", deactivate_admin_member_path(member), method: :patch, class: "danger compact-button" %>
+                        <% else %>
+                          <%= button_to "Reactivate", reactivate_admin_member_path(member), method: :patch, class: "warn compact-button" %>
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <span class="muted">View-only list. Create is allowed.</span>
+                    <% end %>
                   </td>
                 </tr>
               <% end %>

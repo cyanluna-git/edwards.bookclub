@@ -22,4 +22,14 @@ class UserTest < ActiveSupport::TestCase
     assert user.can_manage_club?
     assert_equal "Chairperson", user.management_access_label
   end
+
+  test "site leader can manage members without full club access" do
+    member = Member.create!(english_name: "Hannah Lee", member_role: "Lead", location: "분당", active: true)
+    member.member_office_assignments.create!(office_type: "site_leader", location: "분당", effective_from: Date.current.beginning_of_year)
+    user = User.create!(email: "hannah@example.com", password: "secret123", role: "member", member: member)
+
+    assert user.can_manage_members?
+    assert_not user.can_manage_club?
+    assert_equal "Site leader", user.management_access_label
+  end
 end

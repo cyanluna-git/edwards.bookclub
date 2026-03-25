@@ -78,6 +78,7 @@ run_remote "docker run -d \
   -e ENTRA_TENANT_ID=${ENTRA_TENANT_ID} \
   -e ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID} \
   -e 'ENTRA_CLIENT_SECRET=${ENTRA_CLIENT_SECRET}' \
+  -e 'ENTRA_OAUTH_SCOPE=openid profile email Mail.ReadWrite offline_access' \
   ${IMAGE_NAME}"
 echo "  ✓ Container started"
 

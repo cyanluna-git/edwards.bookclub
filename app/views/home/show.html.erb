@@ -6,6 +6,9 @@
     <% if authenticated? %>
       <%= link_to "Reports", reports_path, class: "button-link" %>
       <%= link_to "Books", books_path, class: "button-link secondary" %>
+      <% if can_manage_members? %>
+        <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
+      <% end %>
       <% if can_manage_club? %>
         <%= link_to "Admin", admin_dashboard_path, class: "button-link secondary" %>
       <% end %>

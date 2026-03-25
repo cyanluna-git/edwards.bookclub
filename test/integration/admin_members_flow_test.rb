@@ -12,6 +12,8 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
     @inactive_member = Member.create!(english_name: "Min Seo", korean_name: "민서", email: "min@example.com", department: "Quality", member_role: "Lead", location: "분당", active: false)
     @chairperson_member = Member.create!(english_name: "Gerald Park", korean_name: "박근윤", email: "gerald.park@edwardsvacuum.com", department: "Control Engineering", member_role: "정회원:회장:Lead", location: "아산", active: true)
     @chairperson_member.member_office_assignments.create!(office_type: "chairperson", effective_from: @period.start_date)
+    @site_leader_member = Member.create!(english_name: "Daniel Kim", korean_name: "김도윤", email: "daniel@example.com", department: "Operations", member_role: "Lead", location: "분당", active: true)
+    @site_leader_member.member_office_assignments.create!(office_type: "site_leader", location: "분당", effective_from: @period.start_date)
     @meeting = Meeting.create!(title: "March Meetup", meeting_at: Time.zone.parse("2026-03-10 19:00"), fiscal_period: @period)
     MeetingAttendance.create!(meeting: @meeting, member: @active_member)
     BookRequest.create!(member: @active_member, title: "Thinking in Systems", fiscal_period: @period)
@@ -19,6 +21,7 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
     @admin = User.create!(email: "admin@example.com", password: "secret123", password_confirmation: "secret123", role: "admin")
     @member_user = User.create!(email: "member@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @active_member)
     @chairperson_user = User.create!(email: "chairperson@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @chairperson_member)
+    @site_leader_user = User.create!(email: "site.leader@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @site_leader_member)
   end
 
   test "admin can search and filter members" do
@@ -91,8 +94,7 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     follow_redirect!
-    assert_redirected_to reports_path
-    follow_redirect!
+    assert_response :success
     assert_match "You are not authorized to access that page.", response.body
   end
 
@@ -150,6 +152,53 @@ class AdminMembersFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Member operations", response.body
+  end
+
+  test "site leader can access member list and create a member" do
+    sign_in_as(@site_leader_user)
+
+    get admin_members_path
+
+    assert_response :success
+    assert_match "Member operations", response.body
+    assert_match "New member", response.body
+    assert_no_match %r{href="/admin/members/#{@active_member.id}"}, response.body
+    assert_no_match %r{href="/admin/members/#{@active_member.id}/edit"}, response.body
+
+    get new_admin_member_path
+
+    assert_response :success
+    assert_match "New member", response.body
+
+    post admin_members_path, params: {
+      member: {
+        english_name: "New Joiner",
+        korean_name: "신입회원",
+        email: "new.joiner@example.com",
+        department: "Logistics",
+        member_role: "정회원",
+        location: "분당",
+        joined_on: "2026-03-20",
+        bio: "Bundang member.",
+        active: "true"
+      }
+    }
+
+    created_member = Member.find_by!(email: "new.joiner@example.com")
+    assert_redirected_to admin_members_path
+    follow_redirect!
+    assert_match "Member created successfully.", response.body
+    assert_match created_member.english_name, response.body
+  end
+
+  test "site leader cannot access member detail or edit screens" do
+    sign_in_as(@site_leader_user)
+
+    get admin_member_path(@active_member)
+    assert_redirected_to root_path
+
+    get edit_admin_member_path(@active_member)
+    assert_redirected_to root_path
   end
 
   private
