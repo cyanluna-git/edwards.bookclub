@@ -1,0 +1,136 @@
+<section class="hero">
+  <p class="eyebrow">Admin Settings</p>
+  <h1>Office Assignments</h1>
+  <p class="hero-copy">Manage effective-dated chairperson, secretary, and site leader records without direct DB updates.</p>
+</section>
+
+<section class="panel stack">
+  <div class="section-title">
+    <div>
+      <h2>Workspace</h2>
+      <p class="muted">History stays visible. Reserve-affecting roles are marked inline.</p>
+    </div>
+    <div class="button-row">
+      <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
+      <%= link_to "Reserve policies", admin_reserve_policies_path, class: "button-link secondary" %>
+      <%= link_to "New assignment", new_admin_office_assignment_path(member_id: @filters[:member_id]), class: "button-link" %>
+    </div>
+  </div>
+
+  <%= form_with url: admin_office_assignments_path, method: :get, local: true do |form| %>
+    <div class="filters">
+      <div class="field-stack">
+        <%= form.label :member_id, "Member" %>
+        <%= form.select :member_id, options_for_select([["All", ""]] + @member_options, @filters[:member_id]) %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :office_type, "Office type" %>
+        <%= form.select :office_type, options_for_select([["All", ""]] + @office_type_options, @filters[:office_type]) %>
+      </div>
+      <div class="field-stack">
+        <%= form.label :state, "Window" %>
+        <%= form.select :state, options_for_select([["All", ""], ["Active", "active"], ["Future", "future"], ["History", "history"]], @filters[:state]) %>
+      </div>
+    </div>
+    <div class="button-row">
+      <%= form.submit "Apply filters" %>
+      <%= link_to "Reset", admin_office_assignments_path, class: "button-link secondary" %>
+    </div>
+  <% end %>
+</section>
+
+<section class="detail-grid office-assignment-metrics">
+  <article class="metric-card">
+    <span class="muted">Active today</span>
+    <strong><%= @active_assignments.size %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Upcoming</span>
+    <strong><%= @future_assignments.size %></strong>
+  </article>
+  <article class="metric-card">
+    <span class="muted">Historical</span>
+    <strong><%= @historical_assignments.size %></strong>
+  </article>
+</section>
+
+<% [
+  ["Active assignments", @active_assignments, "Assignments effective on #{@current_date}."],
+  ["Upcoming assignments", @future_assignments, "Future handoffs and scheduled roles."],
+  ["History", @historical_assignments, "Ended assignments retained for auditability."]
+].each do |title, assignments, subtitle| %>
+  <section class="panel stack">
+    <div class="section-title">
+      <div>
+        <h2><%= title %></h2>
+        <p class="muted"><%= subtitle %></p>
+      </div>
+      <span class="muted"><%= pluralize(assignments.size, "assignment") %></span>
+    </div>
+
+    <% if assignments.any? %>
+      <div class="report-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Office</th>
+              <th>Effective window</th>
+              <th>Reserve effect</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% assignments.each do |assignment| %>
+              <tr>
+                <td>
+                  <strong><%= assignment.member.display_name %></strong>
+                  <div class="member-subline">
+                    <span><%= assignment.member.email.presence || "No email" %></span>
+                    <span><%= assignment.member.location.presence || "No location" %></span>
+                  </div>
+                </td>
+                <td>
+                  <div class="table-pills">
+                    <span class="pill"><%= assignment.office_name %></span>
+                    <% if assignment.location.present? %>
+                      <span class="location-pill tone-<%= Admin::DashboardSnapshot::LOCATION_TONES.fetch(assignment.location, "neutral") %>"><%= assignment.location %></span>
+                    <% end %>
+                  </div>
+                </td>
+                <td>
+                  <strong><%= assignment.effective_from %></strong>
+                  <div class="member-subline">
+                    <span>to <%= assignment.effective_to || "open-ended" %></span>
+                    <span>Created by <%= assignment.created_by&.email || "System" %></span>
+                  </div>
+                </td>
+                <td>
+                  <% if assignment.affects_reserve_bonus? %>
+                    <span class="pill active">Reserve bonus applies</span>
+                  <% else %>
+                    <span class="pill">Display / access role only</span>
+                  <% end %>
+                </td>
+                <td>
+                  <div class="action-cluster">
+                    <%= link_to "Edit", edit_admin_office_assignment_path(assignment), class: "button-link secondary compact-button" %>
+                    <% if assignment.active_on?(@current_date) && assignment.effective_to.blank? %>
+                      <%= button_to "End today", end_assignment_admin_office_assignment_path(assignment), method: :patch, params: { effective_to: @current_date.iso8601 }, class: "warn compact-button" %>
+                    <% end %>
+                    <%= button_to "Delete", admin_office_assignment_path(assignment), method: :delete, class: "danger compact-button", form: { data: { turbo_confirm: "Delete this assignment row?" } } %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h3>No assignments in this section.</h3>
+        <p>Adjust the filters or create a new office assignment.</p>
+      </div>
+    <% end %>
+  </section>
+<% end %>

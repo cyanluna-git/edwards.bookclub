@@ -29,6 +29,12 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :office_assignments, controller: "office_assignments" do
+      member do
+        patch :end_assignment, path: "end"
+      end
+    end
+
     resources :meetings do
       resources :attendances, controller: "meeting_attendances", only: %i[create update destroy]
       resources :photos, controller: "meeting_photos", only: %i[create update destroy]

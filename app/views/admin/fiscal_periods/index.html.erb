@@ -11,6 +11,7 @@
       <p class="muted">Only one period can be active at a time.</p>
     </div>
     <div class="button-row">
+      <%= link_to "Office assignments", admin_office_assignments_path, class: "button-link secondary" %>
       <%= link_to "Reserve policies", admin_reserve_policies_path, class: "button-link secondary" %>
       <%= link_to "New fiscal period", new_admin_fiscal_period_path, class: "button-link" %>
     </div>

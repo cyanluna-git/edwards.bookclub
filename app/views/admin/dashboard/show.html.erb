@@ -19,6 +19,7 @@
       <div class="button-row sidebar-actions">
         <% if can_manage_club? %>
           <%= link_to "Members", admin_members_path, class: "button-link secondary" %>
+          <%= link_to "Office Assignments", admin_office_assignments_path, class: "button-link secondary" %>
           <%= link_to "Meetups", admin_meetings_path, class: "button-link secondary" %>
           <%= link_to "Books", admin_book_requests_path, class: "button-link secondary" %>
           <%= link_to "Settings", admin_fiscal_periods_path, class: "button-link secondary" %>

@@ -5,6 +5,7 @@ class MemberOfficeAssignment < ApplicationRecord
     "site_leader" => "지역 리더"
   }.freeze
   GLOBAL_OFFICE_TYPES = %w[chairperson secretary].freeze
+  RESERVE_BONUS_OFFICE_TYPES = %w[chairperson site_leader].freeze
 
   belongs_to :member
   belongs_to :created_by, class_name: "User", optional: true
@@ -33,6 +34,10 @@ class MemberOfficeAssignment < ApplicationRecord
 
   def site_leader?
     office_type == "site_leader"
+  end
+
+  def affects_reserve_bonus?
+    office_type.in?(RESERVE_BONUS_OFFICE_TYPES)
   end
 
   def office_name

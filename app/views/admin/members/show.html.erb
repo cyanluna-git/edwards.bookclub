@@ -52,6 +52,10 @@
         <% else %>
           <p class="muted">No active office assignments today.</p>
         <% end %>
+        <div class="button-row" style="margin-top: 0.75rem;">
+          <%= link_to "Open Office Assignments", admin_office_assignments_path(member_id: @member.id), class: "button-link secondary" %>
+          <%= link_to "New assignment", new_admin_office_assignment_path(member_id: @member.id), class: "button-link secondary" %>
+        </div>
       </div>
     </div>
   </article>
