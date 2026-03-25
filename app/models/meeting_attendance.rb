@@ -20,7 +20,7 @@ class MeetingAttendance < ApplicationRecord
     return "manual_override" if override_points.present?
     return "pending" if awarded_points.nil?
 
-    member_office_labels_at_award.any? ? "office_policy" : "member_policy"
+    reserve_office_labels_at_award.any? ? "office_policy" : "member_policy"
   end
 
   def award_source_label
@@ -28,7 +28,7 @@ class MeetingAttendance < ApplicationRecord
     when "reserve_exempt" then "Exempt"
     when "manual_override" then "Manual override"
     when "office_policy"
-      labels = member_office_labels_at_award
+      labels = reserve_office_labels_at_award
       labels.any? ? labels.join(", ") : "Privileged office"
     when "member_policy" then awarded_policy_role.presence || "Standard member"
     else "Pending snapshot"
@@ -62,9 +62,9 @@ class MeetingAttendance < ApplicationRecord
       will_save_change_to_override_points?
   end
 
-  def member_office_labels_at_award
+  def reserve_office_labels_at_award
     return [] unless meeting && member
 
-    member.office_labels_on(meeting.meeting_at.to_date)
+    member.reserve_office_labels_on(meeting.meeting_at.to_date)
   end
 end

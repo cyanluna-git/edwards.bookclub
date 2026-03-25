@@ -1,6 +1,7 @@
 class Member < ApplicationRecord
   EMAIL_FORMAT = URI::MailTo::EMAIL_REGEXP
   SEARCH_COLUMNS = %w[english_name korean_name email department location member_role].freeze
+  RESERVE_PRIVILEGED_OFFICE_TYPES = %w[chairperson site_leader].freeze
 
   has_one :user, dependent: :nullify
   has_many :member_office_assignments, dependent: :delete_all
@@ -67,7 +68,7 @@ class Member < ApplicationRecord
   end
 
   def reserve_policy_role_on(date)
-    return "Lead" if member_office_assignments.effective_on(date).exists?
+    return "Lead" if reserve_privileged_office_assignments_on(date).exists?
 
     reserve_policy_role
   end
@@ -82,5 +83,13 @@ class Member < ApplicationRecord
 
   def office_labels_on(date)
     office_assignments_on(date).map(&:display_label)
+  end
+
+  def reserve_privileged_office_assignments_on(date)
+    office_assignments_on(date).where(office_type: RESERVE_PRIVILEGED_OFFICE_TYPES)
+  end
+
+  def reserve_office_labels_on(date)
+    reserve_privileged_office_assignments_on(date).map(&:display_label)
   end
 end

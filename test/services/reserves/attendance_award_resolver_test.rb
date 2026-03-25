@@ -37,6 +37,22 @@ module Reserves
       assert_includes result.office_labels, "지역 리더 · 아산"
     end
 
+    test "keeps standard policy when only secretary office is active" do
+      @member.update!(member_role: "정회원:총무")
+      @member.member_office_assignments.create!(
+        office_type: "secretary",
+        effective_from: Date.new(2026, 4, 1)
+      )
+      attendance = MeetingAttendance.new(meeting: @meeting, member: @member, reserve_exempt: false)
+
+      result = AttendanceAwardResolver.new(attendance: attendance).call
+
+      assert_equal "정회원", result.policy_role
+      assert_equal 5000, result.awarded_points
+      assert_equal "member_policy", result.source
+      assert_empty result.office_labels
+    end
+
     test "prefers manual override for effective points" do
       attendance = MeetingAttendance.new(meeting: @meeting, member: @member, reserve_exempt: false, override_points: 7000)
 
