@@ -53,13 +53,22 @@ class User < ApplicationRecord
     member&.member_office_assignments&.effective_on(date)&.where(office_type: "chairperson")&.exists? || false
   end
 
+  def site_leader_manager?(date = Date.current)
+    member&.member_office_assignments&.effective_on(date)&.where(office_type: "site_leader")&.exists? || false
+  end
+
   def can_manage_club?(date = Date.current)
     admin? || chairperson_manager?(date)
+  end
+
+  def can_manage_members?(date = Date.current)
+    can_manage_club?(date) || site_leader_manager?(date)
   end
 
   def management_access_label(date = Date.current)
     return "Admin" if admin?
     return "Chairperson" if chairperson_manager?(date)
+    return "Site leader" if site_leader_manager?(date)
 
     "Member"
   end

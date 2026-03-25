@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_current_request_context
 
-  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?, :sso_enabled?, :sso_auto_redirect?, :entra_id_enabled?
+  helper_method :current_user, :current_member, :authenticated?, :can_manage_club?, :can_manage_members?, :sso_enabled?, :sso_auto_redirect?, :entra_id_enabled?
 
   private
 
@@ -38,8 +38,19 @@ class ApplicationController < ActionController::Base
     redirect_to root_path, alert: "You are not authorized to access that page."
   end
 
+  def require_member_management_access!
+    authenticate_user!
+    return if performed? || can_manage_members?
+
+    redirect_to root_path, alert: "You are not authorized to access that page."
+  end
+
   def can_manage_club?
     current_user&.can_manage_club?
+  end
+
+  def can_manage_members?
+    current_user&.can_manage_members?
   end
 
   def sso_enabled?

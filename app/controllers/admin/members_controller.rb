@@ -1,5 +1,7 @@
 module Admin
   class MembersController < BaseController
+    skip_before_action :require_admin!, only: %i[index new create]
+    before_action :require_member_management_access!, only: %i[index new create]
     before_action :set_member, only: %i[show edit update deactivate reactivate]
     before_action :load_filter_options, only: %i[index new create edit update show]
 
@@ -28,7 +30,7 @@ module Admin
       @member = Member.new(member_params)
 
       if @member.save
-        redirect_to admin_member_path(@member), notice: "Member created successfully."
+        redirect_to(post_create_redirect_path, notice: "Member created successfully.")
       else
         render :new, status: :unprocessable_content
       end
@@ -77,6 +79,10 @@ module Admin
         role: @role_options.include?(params[:role].to_s) ? params[:role].to_s : nil,
         location: @location_options.include?(params[:location].to_s) ? params[:location].to_s : nil
       }
+    end
+
+    def post_create_redirect_path
+      can_manage_club? ? admin_member_path(@member) : admin_members_path
     end
   end
 end
