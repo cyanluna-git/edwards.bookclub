@@ -11,7 +11,7 @@
     <div class="section-title">
       <div>
         <h2>Request details</h2>
-        <p class="muted"><%= @book_request.request_status.presence || "No status" %></p>
+        <p class="muted"><%= @book_request.request_status_label %></p>
       </div>
       <div class="button-row">
         <%= link_to "Edit request", edit_admin_book_request_path(@book_request), class: "button-link" %>

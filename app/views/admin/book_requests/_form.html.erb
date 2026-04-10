@@ -84,7 +84,7 @@
       <%= form.hidden_field :link_url %>
       <%= form.hidden_field :cover_url %>
       <%= form.hidden_field :fiscal_period_id, value: book_request.fiscal_period_id || FiscalPeriod.find_by(active: true)&.id %>
-      <%= form.hidden_field :request_status, value: book_request.request_status.presence || "Requested" %>
+      <%= form.hidden_field :request_status, value: book_request.request_status_label %>
       <%= form.hidden_field :requested_on, value: book_request.requested_on || Date.current %>
 
       <div class="button-row">

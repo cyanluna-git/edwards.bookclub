@@ -91,7 +91,7 @@
           <% @snapshot.recent_book_requests.each do |request| %>
             <article class="member-card">
               <h3><%= link_to request.title, member_book_request_path(request) %></h3>
-              <p class="muted"><%= request.request_status.presence || "Requested" %> · <%= request.requested_on&.iso8601 || "No date" %></p>
+              <p class="muted"><%= request.request_status_label %> · <%= request.requested_on&.iso8601 || "No date" %></p>
             </article>
           <% end %>
         </div>

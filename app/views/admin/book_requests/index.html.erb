@@ -39,7 +39,7 @@
       <div class="filters">
         <div class="field">
           <%= form.label :q, "Search" %>
-          <%= form.text_field :q, value: @filters[:q], placeholder: "systems, Hannah, Approved..." %>
+          <%= form.text_field :q, value: @filters[:q], placeholder: "systems, Hannah, 구매완료..." %>
         </div>
         <div class="field">
           <%= form.label :member_id, "Member" %>
@@ -91,6 +91,7 @@
     <h2>Requests</h2>
     <p class="muted"><%= pluralize(@book_requests.size, "request") %> shown</p>
   </div>
+  <% return_to = request.fullpath %>
 
   <% if @book_requests.any? %>
     <table class="data-table">
@@ -106,25 +107,30 @@
         </tr>
       </thead>
       <tbody>
-        <% @book_requests.each do |request| %>
+        <% @book_requests.each do |book_request| %>
           <tr>
             <td>
               <div class="book-table-cell">
-                <% if request.remote_cover_url.present? %>
-                  <%= image_tag request.remote_cover_url, alt: "#{request.title} cover", class: "book-table-cover" %>
+                <% if book_request.remote_cover_url.present? %>
+                  <%= image_tag book_request.remote_cover_url, alt: "#{book_request.title} cover", class: "book-table-cover" %>
                 <% end %>
                 <div>
-                  <strong><%= link_to request.title, admin_book_request_path(request) %></strong>
-                  <div class="muted"><%= [request.author, request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
+                  <strong><%= link_to book_request.title, admin_book_request_path(book_request) %></strong>
+                  <div class="muted"><%= [book_request.author, book_request.publisher].compact.reject(&:blank?).join(" · ").presence || "No metadata" %></div>
                 </div>
               </div>
             </td>
-            <td><%= request.member&.english_name || "Unlinked" %></td>
-            <td><span class="pill"><%= request.request_status.presence || "No status" %></span></td>
-            <td><%= request.requested_on&.iso8601 || "Not set" %></td>
-            <td><%= number_to_currency(request.price, unit: "₩", precision: 0, format: "%n%u") if request.price %></td>
-            <td><%= number_to_currency(request.additional_payment, unit: "₩", precision: 0, format: "%n%u") if request.additional_payment %></td>
-            <td><%= number_to_currency(request.net_cash_effect, unit: "₩", precision: 0, format: "%n%u") %></td>
+            <td><%= book_request.member&.english_name || "Unlinked" %></td>
+            <td>
+              <div class="inline-status-actions">
+                <span class="pill"><%= book_request.request_status_label %></span>
+                <%= render "purchase_confirmation_button", book_request:, return_to: %>
+              </div>
+            </td>
+            <td><%= book_request.requested_on&.iso8601 || "Not set" %></td>
+            <td><%= number_to_currency(book_request.price, unit: "₩", precision: 0, format: "%n%u") if book_request.price %></td>
+            <td><%= number_to_currency(book_request.additional_payment, unit: "₩", precision: 0, format: "%n%u") if book_request.additional_payment %></td>
+            <td><%= number_to_currency(book_request.net_cash_effect, unit: "₩", precision: 0, format: "%n%u") %></td>
           </tr>
         <% end %>
       </tbody>

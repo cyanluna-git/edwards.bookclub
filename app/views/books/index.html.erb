@@ -25,6 +25,8 @@
 
 <p class="muted" style="margin-bottom: 1rem;"><%= @book_requests.size %> requests</p>
 
+<% return_to = request.fullpath %>
+
 <div class="stack" style="gap: 0.5rem;">
   <% @book_requests.each do |br| %>
     <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border, #ddd); border-radius: 6px;">
@@ -57,7 +59,12 @@
         <% end %>
       </div>
 
-      <span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; background: var(--muted-bg, #eee);"><%= br.request_status %></span>
+      <div class="inline-status-actions" style="justify-content: flex-end; min-width: 120px;">
+        <span style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; background: var(--muted-bg, #eee);"><%= br.request_status_label %></span>
+        <% if can_manage_club? %>
+          <%= render "admin/book_requests/purchase_confirmation_button", book_request: br, return_to: %>
+        <% end %>
+      </div>
     </div>
   <% end %>
 </div>

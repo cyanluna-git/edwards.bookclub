@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="meta-list">
-      <div><span>Status</span><span><%= @book_request.request_status.presence || "Requested" %></span></div>
+      <div><span>Status</span><span><%= @book_request.request_status_label %></span></div>
       <div><span>Requested on</span><span><%= @book_request.requested_on&.iso8601 || "Not set" %></span></div>
       <div><span>Author</span><span><%= @book_request.author.presence || "Not set" %></span></div>
       <div><span>Publisher</span><span><%= @book_request.publisher.presence || "Not set" %></span></div>

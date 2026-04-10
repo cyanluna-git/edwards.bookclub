@@ -15,7 +15,7 @@ module MemberPortal
       @book_request = current_member.book_requests.build(
         fiscal_period: FiscalPeriod.find_by(active: true),
         requested_on: Date.current,
-        request_status: "Requested"
+        request_status: BookRequest.default_status
       )
       apply_prefill(@book_request)
       load_member_balance
@@ -23,7 +23,7 @@ module MemberPortal
 
     def create
       @book_request = current_member.book_requests.build(member_book_request_params)
-      @book_request.request_status = @book_request.request_status.presence || "Requested"
+      @book_request.request_status = @book_request.request_status.presence || BookRequest.default_status
 
       if @book_request.save
         redirect_to member_book_request_path(@book_request), notice: "Book request submitted successfully."

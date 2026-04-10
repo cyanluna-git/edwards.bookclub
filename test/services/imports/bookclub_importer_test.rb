@@ -18,6 +18,7 @@ class BookclubImporterTest < ActiveSupport::TestCase
     assert first_result.success?
     assert_equal 2, Member.count
     assert_equal 2, BookRequest.count
+    assert_equal [ "승인완료", "구매요청" ], BookRequest.order(:source_key).pluck(:request_status)
     assert_equal 1, Meeting.count
     assert_equal 2, MeetingAttendance.count
     assert_equal 1, MeetingPhoto.count

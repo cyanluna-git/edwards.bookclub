@@ -13,8 +13,8 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     MeetingAttendance.create!(meeting:, member: @member, reserve_exempt: false)
     MeetingPhoto.create!(meeting:, source_url: "https://example.com/march.jpg", caption: "March", sort_order: 1)
 
-    @book_request = BookRequest.create!(member: @member, fiscal_period: @period, title: "Thinking in Systems", request_status: "Approved", price: 18000, additional_payment: 3000, requested_on: Date.new(2026, 3, 1))
-    @other_request = BookRequest.create!(member: @other_member, fiscal_period: @period, title: "Deep Work", request_status: "Requested", requested_on: Date.new(2026, 3, 2))
+    @book_request = BookRequest.create!(member: @member, fiscal_period: @period, title: "Thinking in Systems", request_status: "승인완료", price: 18000, additional_payment: 3000, requested_on: Date.new(2026, 3, 1))
+    @other_request = BookRequest.create!(member: @other_member, fiscal_period: @period, title: "Deep Work", request_status: "구매요청", requested_on: Date.new(2026, 3, 2))
 
     @member_user = User.create!(email: "member@example.com", password: "secret123", password_confirmation: "secret123", role: "member", member: @member)
     @orphan_user = User.create!(email: "orphan@example.com", password: "secret123", password_confirmation: "secret123", role: "member")
@@ -28,7 +28,7 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "Your book club space", response.body
-    assert_match "KRW 5,000", response.body
+    assert_match "5,000₩", response.body
     assert_match "March Meetup", response.body
     assert_no_match "Deep Work", response.body
     assert_no_match "Manage members", response.body
@@ -63,7 +63,7 @@ class MemberPortalFlowTest < ActionDispatch::IntegrationTest
     created.reload
     assert_equal "Updated note", created.comment
     assert_equal "4", created.rating
-    assert_equal "Requested", created.request_status
+    assert_equal "구매요청", created.request_status
   end
 
   test "member can delete their own book request" do

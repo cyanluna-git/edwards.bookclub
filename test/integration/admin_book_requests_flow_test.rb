@@ -19,7 +19,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
       fiscal_period: @period,
       title: "Thinking in Systems",
       author: "Donella Meadows",
-      request_status: "Approved",
+      request_status: "승인완료",
       price: 18000,
       additional_payment: 3000,
       requested_on: Date.new(2026, 3, 1)
@@ -32,12 +32,43 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
   test "admin can filter requests and see reserve snapshot" do
     sign_in_as(@admin)
 
-    get admin_book_requests_path, params: { member_id: @member.id, request_status: "Approved", fiscal_period_id: @period.id, requested_from: "2026-03-01", requested_to: "2026-03-31" }
+    get admin_book_requests_path, params: { member_id: @member.id, request_status: "승인완료", fiscal_period_id: @period.id, requested_from: "2026-03-01", requested_to: "2026-03-31" }
 
     assert_response :success
     assert_match "Thinking in Systems", response.body
     assert_match "Reserve balance", response.body
-    assert_match "KRW 15,000", response.body
+    assert_match "15,000₩", response.body
+  end
+
+  test "club manager sees inline purchase confirmation on request lists and can use it" do
+    sign_in_as(@admin)
+    requested_book = BookRequest.create!(
+      member: @leader,
+      fiscal_period: @period,
+      title: "Deep Work",
+      author: "Cal Newport",
+      request_status: "구매요청",
+      price: 22000,
+      requested_on: Date.new(2026, 3, 19)
+    )
+
+    get books_path
+
+    assert_response :success
+    assert_match "구매 완료확정", response.body
+
+    patch admin_book_request_path(requested_book), params: {
+      return_to: books_path,
+      book_request: { request_status: "구매완료" }
+    }
+
+    assert_redirected_to books_path
+    follow_redirect!
+    assert_response :success
+
+    requested_book.reload
+    assert_equal "구매완료", requested_book.request_status
+    assert_no_match "구매 완료확정", response.body
   end
 
   test "admin can create and update a book request" do
@@ -50,7 +81,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
         title: "Deep Work",
         author: "Cal Newport",
         publisher: "Grand Central",
-        request_status: "Requested",
+        request_status: "구매요청",
         price: "22000",
         additional_payment: "2000",
         requested_on: "2026-04-01",
@@ -66,7 +97,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
 
     patch admin_book_request_path(created), params: {
       book_request: {
-        request_status: "Purchased",
+        request_status: "구매완료",
         price: "25000",
         additional_payment: "5000",
         comment: "Purchased for April"
@@ -75,7 +106,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to admin_book_request_path(created)
     created.reload
-    assert_equal "Purchased", created.request_status
+    assert_equal "구매완료", created.request_status
     assert_equal BigDecimal("25000"), created.price
     assert_equal BigDecimal("5000"), created.additional_payment
   end
@@ -124,7 +155,8 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
     assert_match 'value="James Clear"', response.body
     assert_match 'value="Avery"', response.body
     assert_match 'value="18000"', response.body
-    assert_match /option selected="selected" value="#{@leader.id}"/, response.body
+    assert_match /name="book_request\[member_id\]"/, response.body
+    assert_match /value="#{@leader.id}"/, response.body
   end
 
   test "admin book request form falls back cleanly when aladin is unavailable" do
@@ -162,7 +194,7 @@ class AdminBookRequestsFlowTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "Net cash effect", response.body
     assert_match "Donella Meadows", response.body
-    assert_match "Approved", response.body
+    assert_match "승인완료", response.body
   end
 
   test "non-url legacy cover values do not break the request index" do

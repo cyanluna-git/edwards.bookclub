@@ -408,6 +408,23 @@ textarea {
   flex: 0 0 auto;
 }
 
+.inline-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.inline-action-form {
+  margin: 0;
+}
+
+.inline-action-button {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
 .section-title {
   display: flex;
   justify-content: space-between;
