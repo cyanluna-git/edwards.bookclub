@@ -2,6 +2,7 @@ require "json"
 require "net/http"
 require "uri"
 require "base64"
+require "pathname"
 
 module Integrations
   module MicrosoftGraph
@@ -10,23 +11,35 @@ module Integrations
 
       Result = Struct.new(:success, :draft_id, :web_link, :error, keyword_init: true)
 
-      def self.call(user:, subject:, body_html:, to_recipients: [], attachment_path: nil)
-        new(user:, subject:, body_html:, to_recipients:, attachment_path:).call
+      def self.call(user:, subject:, body_html:, to_recipients: [], cc_recipients: [], attachment_path: nil, attachments: [])
+        new(
+          user:,
+          subject:,
+          body_html:,
+          to_recipients:,
+          cc_recipients:,
+          attachment_path:,
+          attachments:
+        ).call
       end
 
-      def initialize(user:, subject:, body_html:, to_recipients: [], attachment_path: nil)
+      def initialize(user:, subject:, body_html:, to_recipients: [], cc_recipients: [], attachment_path: nil, attachments: [])
         @user = user
         @subject = subject
         @body_html = body_html
         @to_recipients = to_recipients
+        @cc_recipients = cc_recipients
         @attachment_path = attachment_path
+        @attachments = attachments
         @retried = false
       end
 
       def call
         token = @user.ensure_valid_microsoft_token!
         draft = create_draft(token)
-        add_attachment(token, draft["id"]) if @attachment_path && File.exist?(@attachment_path)
+        attachments_to_upload.each do |attachment|
+          add_attachment(token, draft["id"], attachment)
+        end
 
         Result.new(
           success: true,
@@ -52,23 +65,23 @@ module Integrations
         payload = {
           subject: @subject,
           body: { contentType: "HTML", content: @body_html },
-          toRecipients: build_recipients,
+          toRecipients: build_recipients(@to_recipients),
           isDraft: true
         }
+        payload[:ccRecipients] = build_recipients(@cc_recipients) if @cc_recipients.any?
 
         response = graph_post(uri, token, payload)
         handle_response(response, "draft creation")
       end
 
-      def add_attachment(token, message_id)
+      def add_attachment(token, message_id, attachment)
         uri = URI("#{GRAPH_BASE}/me/messages/#{message_id}/attachments")
-        file_content = File.binread(@attachment_path)
-        filename = File.basename(@attachment_path)
+        file_content = File.binread(attachment[:path])
 
         payload = {
           "@odata.type": "#microsoft.graph.fileAttachment",
-          name: filename,
-          contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          name: attachment[:name],
+          contentType: attachment[:content_type],
           contentBytes: Base64.strict_encode64(file_content)
         }
 
@@ -76,14 +89,55 @@ module Integrations
         handle_response(response, "attachment")
       end
 
-      def build_recipients
-        @to_recipients.map do |r|
+      def build_recipients(recipients)
+        recipients.map do |r|
           {
             emailAddress: {
               address: r[:email] || r["email"],
               name: r[:name] || r["name"] || ""
             }
           }
+        end
+      end
+
+      def attachments_to_upload
+        legacy_attachment = normalize_attachment(path: @attachment_path) if @attachment_path.present?
+        normalized_attachments = Array(@attachments).filter_map { |attachment| normalize_attachment(attachment) }
+
+        [legacy_attachment, *normalized_attachments]
+          .compact
+          .select { |attachment| File.exist?(attachment[:path]) }
+          .uniq { |attachment| [ attachment[:path], attachment[:name] ] }
+      end
+
+      def normalize_attachment(attachment)
+        attributes =
+          if attachment.is_a?(Hash)
+            attachment.symbolize_keys
+          else
+            { path: attachment }
+          end
+
+        path = attributes[:path].to_s
+        return if path.blank?
+
+        name = attributes[:name].presence || File.basename(path)
+
+        {
+          path: path,
+          name: name,
+          content_type: attributes[:content_type].presence || detect_content_type(path, name)
+        }
+      end
+
+      def detect_content_type(path, name)
+        case File.extname(name).downcase
+        when ".docx"
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        when ".xlsx"
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        else
+          Marcel::MimeType.for(Pathname.new(path), name:) || "application/octet-stream"
         end
       end
 

@@ -1,6 +1,12 @@
-default_recipients: []
-  # - email: "recipient@edwardsvacuum.com"
-  #   name: "총무과 담당자"
+default_to_recipients:
+  - email: "alieen.yoon@edwardsvacuum.com"
+    name: "Alieen Yoon"
+
+default_cc_recipients:
+  - email: "qj.lee@csk.kr"
+    name: "QJ Lee"
+  - email: "blake.jung@edwardsvacuum.com"
+    name: "Blake Jung"
 
 subject_template: "에드워즈 독서모임 %{month} 활동 보고서"
 
