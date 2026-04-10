@@ -13,14 +13,15 @@ module Reports
     end
 
     def self.default_recipients
-      recipients = load[:default_recipients]
-      return [] unless recipients.is_a?(Array)
+      default_to_recipients
+    end
 
-      recipients.filter_map do |r|
-        next unless r.is_a?(Hash) && r[:email].present?
+    def self.default_to_recipients
+      recipient_list(:default_to_recipients, fallback_key: :default_recipients)
+    end
 
-        { email: r[:email], name: r[:name] || "" }
-      end
+    def self.default_cc_recipients
+      recipient_list(:default_cc_recipients)
     end
 
     def self.subject(month:)
@@ -35,10 +36,25 @@ module Reports
 
     def self.default_config
       {
+        default_to_recipients: [],
+        default_cc_recipients: [],
         default_recipients: [],
         subject_template: "에드워즈 독서모임 %{month} 활동 보고서",
         body_template: "<p>에드워즈 독서모임 %{month} 활동 보고서를 첨부합니다.</p>"
       }
+    end
+
+    def self.recipient_list(key, fallback_key: nil)
+      config = load
+      recipients = config[key]
+      recipients = config[fallback_key] if recipients.blank? && fallback_key
+      return [] unless recipients.is_a?(Array)
+
+      recipients.filter_map do |recipient|
+        next unless recipient.is_a?(Hash) && recipient[:email].present?
+
+        { email: recipient[:email], name: recipient[:name] || "" }
+      end
     end
   end
 end

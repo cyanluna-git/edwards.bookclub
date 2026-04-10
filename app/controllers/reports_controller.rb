@@ -30,6 +30,7 @@ class ReportsController < ApplicationController
 
   def create_outlook_draft
     report_params = { fiscal_period_id: params[:fiscal_period_id], month: params[:month] }
+    generated_paths = []
 
     unless current_user.microsoft_access_token.present?
       redirect_to reports_path(**report_params), alert: "Microsoft 계정 연동이 필요합니다. SSO로 다시 로그인해 주세요."
@@ -41,6 +42,9 @@ class ReportsController < ApplicationController
     config = Reports::EmailConfig
 
     docx_path = Reports::MonthlyDocxGenerator.new(fiscal_period:, month:).call
+    generated_paths << docx_path
+    roster_path = Reports::MemberRosterXlsxGenerator.new(month:).call
+    generated_paths << roster_path
 
     dashboard = Admin::DashboardSnapshot.new(fiscal_period:, month:).call
 
@@ -52,8 +56,12 @@ class ReportsController < ApplicationController
         meeting_count: dashboard.meeting_digests.size,
         attendance_count: dashboard.location_breakdown.sum(&:count)
       ),
-      to_recipients: config.default_recipients,
-      attachment_path: docx_path
+      to_recipients: config.default_to_recipients,
+      cc_recipients: config.default_cc_recipients,
+      attachments: [
+        { path: docx_path, name: "월간보고서_#{month}.docx" },
+        { path: roster_path, name: "회원명단_#{month}.xlsx" }
+      ]
     )
 
     if result.success
@@ -69,6 +77,12 @@ class ReportsController < ApplicationController
     Rails.logger.error("DOCX generation for Outlook draft failed: #{e.message}")
     redirect_to reports_path(fiscal_period_id: params[:fiscal_period_id], month: params[:month]),
                 alert: "DOCX 생성에 실패했습니다. 다시 시도해 주세요."
+  rescue Reports::MemberRosterXlsxGenerator::GenerationError => e
+    Rails.logger.error("Member roster Excel generation failed: #{e.message}")
+    redirect_to reports_path(fiscal_period_id: params[:fiscal_period_id], month: params[:month]),
+                alert: "회원 명단 Excel 생성에 실패했습니다. 다시 시도해 주세요."
+  ensure
+    generated_paths.each { |path| FileUtils.rm_f(path) if path.present? }
   end
 
   private

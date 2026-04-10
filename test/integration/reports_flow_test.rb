@@ -59,7 +59,7 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
     get reports_path
 
     assert_response :success
-    assert_match "Download DOCX", response.body
+    assert_match "Download Monthly Report", response.body
   end
 
   test "anonymous users cannot generate docx" do
@@ -104,6 +104,67 @@ class ReportsFlowTest < ActionDispatch::IntegrationTest
     assert_match "DOCX", response.body
   ensure
     Reports::MonthlyDocxGenerator.define_singleton_method(:new, original_new) if original_new
+  end
+
+  test "create_outlook_draft uses configured recipients and both attachments" do
+    sign_in_as(@admin)
+    @admin.update!(microsoft_access_token: "access-token", microsoft_token_expires_at: 1.hour.from_now)
+
+    docx_path = Rails.root.join("tmp/reports/monthly_2026-03.docx")
+    roster_path = Rails.root.join("tmp/reports/member_roster_2026-03.xlsx")
+    FileUtils.mkdir_p(docx_path.dirname)
+    File.binwrite(docx_path, "fake docx content")
+    File.binwrite(roster_path, "fake roster content")
+
+    original_docx_new = Reports::MonthlyDocxGenerator.method(:new)
+    original_roster_new = Reports::MemberRosterXlsxGenerator.method(:new)
+    original_draft_call = Integrations::MicrosoftGraph::DraftMailer.method(:call)
+    original_to = Reports::EmailConfig.method(:default_to_recipients)
+    original_cc = Reports::EmailConfig.method(:default_cc_recipients)
+
+    fake_docx_generator = Object.new
+    fake_docx_generator.define_singleton_method(:call) { docx_path }
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new) { |**_| fake_docx_generator }
+
+    fake_roster_generator = Object.new
+    fake_roster_generator.define_singleton_method(:call) { roster_path }
+    Reports::MemberRosterXlsxGenerator.define_singleton_method(:new) { |**_| fake_roster_generator }
+
+    Reports::EmailConfig.define_singleton_method(:default_to_recipients) do
+      [ { email: "alieen.yoon@edwardsvacuum.com", name: "Alieen Yoon" } ]
+    end
+    Reports::EmailConfig.define_singleton_method(:default_cc_recipients) do
+      [
+        { email: "qj.lee@csk.kr", name: "QJ Lee" },
+        { email: "blake.jung@edwardsvacuum.com", name: "Blake Jung" }
+      ]
+    end
+
+    captured_args = nil
+    Integrations::MicrosoftGraph::DraftMailer.define_singleton_method(:call) do |**kwargs|
+      captured_args = kwargs
+      Integrations::MicrosoftGraph::DraftMailer::Result.new(
+        success: true,
+        web_link: "https://outlook.example.test/draft"
+      )
+    end
+
+    post reports_outlook_draft_path, params: { fiscal_period_id: @period.id, month: "2026-03" }
+
+    assert_redirected_to "https://outlook.example.test/draft"
+    assert_equal [ { email: "alieen.yoon@edwardsvacuum.com", name: "Alieen Yoon" } ], captured_args[:to_recipients]
+    assert_equal 2, captured_args[:cc_recipients].size
+    assert_equal [ "월간보고서_2026-03.docx", "회원명단_2026-03.xlsx" ], captured_args[:attachments].map { |attachment| attachment[:name] }
+    assert_not File.exist?(docx_path)
+    assert_not File.exist?(roster_path)
+  ensure
+    Reports::MonthlyDocxGenerator.define_singleton_method(:new, original_docx_new) if original_docx_new
+    Reports::MemberRosterXlsxGenerator.define_singleton_method(:new, original_roster_new) if original_roster_new
+    Integrations::MicrosoftGraph::DraftMailer.define_singleton_method(:call, original_draft_call) if original_draft_call
+    Reports::EmailConfig.define_singleton_method(:default_to_recipients, original_to) if original_to
+    Reports::EmailConfig.define_singleton_method(:default_cc_recipients, original_cc) if original_cc
+    FileUtils.rm_f(docx_path) if docx_path
+    FileUtils.rm_f(roster_path) if roster_path
   end
 
   private
