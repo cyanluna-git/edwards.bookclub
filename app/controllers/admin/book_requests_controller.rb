@@ -23,7 +23,7 @@ module Admin
         member: default_requesting_member,
         fiscal_period: FiscalPeriod.find_by(active: true),
         requested_on: Date.current,
-        request_status: BookRequest.status_options.first
+        request_status: BookRequest.default_status
       )
       apply_prefill(@book_request)
       load_member_balance(@book_request.member)
@@ -48,7 +48,7 @@ module Admin
 
     def update
       if @book_request.update(book_request_params)
-        redirect_to admin_book_request_path(@book_request), notice: "Book request updated successfully."
+        redirect_to post_update_redirect_path, notice: update_notice_message
       else
         render :edit, status: :unprocessable_content
       end
@@ -129,6 +129,18 @@ module Admin
       return unless member
 
       @member_snapshot = MemberPortal::DashboardSnapshot.new(member: member).call
+    end
+
+    def post_update_redirect_path
+      url_from(params[:return_to]) || admin_book_request_path(@book_request)
+    end
+
+    def update_notice_message
+      if BookRequest.normalize_status_value(params.dig(:book_request, :request_status)) == BookRequest.purchased_status && @book_request.purchased?
+        "Book request marked as purchased."
+      else
+        "Book request updated successfully."
+      end
     end
   end
 end

@@ -1,0 +1,14 @@
+<% if book_request.requested? %>
+  <%= button_to "구매 완료확정",
+      admin_book_request_path(book_request),
+      method: :patch,
+      params: {
+        return_to: return_to,
+        book_request: { request_status: BookRequest.purchased_status }
+      },
+      class: "button-link secondary inline-action-button",
+      form: {
+        class: "inline-action-form",
+        data: { turbo_confirm: "Mark #{book_request.title} as purchased?" }
+      } %>
+<% end %>
