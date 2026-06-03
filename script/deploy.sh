@@ -88,6 +88,11 @@ echo "▶ Connecting to nginx network..."
 run_remote "docker network connect edwardsoqcinfra_server-network ${CONTAINER_NAME} 2>/dev/null || true"
 echo "  ✓ Network connected"
 
+# Edge routing is handled by the oqc-nginx container (conf.d/bookclub.conf →
+# proxy_pass http://bookclub-web:3000), which resolves the container by name on
+# edwardsoqcinfra_server-network. The host's systemd nginx is inactive and is not
+# in the request path, so no host-side nginx config sync is performed here.
+
 # ── Step 5: Verify ─────────────────────────────────────────────
 echo ""
 echo "▶ Step 5/5: Verifying..."
@@ -97,5 +102,5 @@ run_remote "docker exec ${CONTAINER_NAME} env | grep ENTRA | sed 's/=.*/=***/' |
 echo ""
 echo "═══════════════════════════════════════════"
 echo "  Deploy complete!"
-echo "  https://bookclub.10.82.37.79.sslip.io"
+echo "  https://edwards-bookclub.atlascopco.group"
 echo "═══════════════════════════════════════════"
