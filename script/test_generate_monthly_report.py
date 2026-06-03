@@ -563,5 +563,87 @@ class TestPhotoPages(unittest.TestCase):
         self.assertIn("photos must be a list", str(ctx.exception))
 
 
+class TestRegistrationNumber(unittest.TestCase):
+    """Club registration number must be filled into the application form."""
+
+    SAMPLE = {
+        "activities": [
+            {"date": "2026-02-11", "description": "도서 리뷰", "count": 2},
+        ],
+        "total": 2,
+        "submission_date": "2026-03-18",
+    }
+
+    def test_registration_number_constant(self) -> None:
+        self.assertEqual(gmr.REGISTRATION_NUMBER, "EKL-130401")
+
+    def test_registration_number_written_to_form(self) -> None:
+        output_path = _run_main(self.SAMPLE)
+        doc = Document(str(output_path))
+        table = doc.tables[0]
+        cell_text = table.rows[gmr.REGISTRATION_ROW_INDEX].cells[
+            gmr.REGISTRATION_CELL_INDEX
+        ].text
+        self.assertIn("EKL-130401", cell_text)
+
+    def test_registration_label_intact(self) -> None:
+        # The label cell (c0) should still read 등록번호
+        output_path = _run_main(self.SAMPLE)
+        doc = Document(str(output_path))
+        table = doc.tables[0]
+        self.assertIn("등록번호", table.rows[gmr.REGISTRATION_ROW_INDEX].cells[0].text)
+
+
+class TestBankCopyPage(unittest.TestCase):
+    """The bank account copy image must be embedded in every report."""
+
+    SAMPLE = {
+        "activities": [
+            {"date": "2026-02-11", "description": "도서 리뷰", "count": 2},
+        ],
+        "total": 2,
+        "submission_date": "2026-03-18",
+    }
+
+    def test_bank_copy_asset_exists(self) -> None:
+        self.assertTrue(
+            gmr.BANK_COPY_IMAGE_PATH.is_file(),
+            f"Bank copy asset missing: {gmr.BANK_COPY_IMAGE_PATH}",
+        )
+
+    def test_bank_copy_image_embedded(self) -> None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        img_path = tmp_dir / "bank.png"
+        _create_tiny_png(img_path)
+        with patch.object(gmr, "BANK_COPY_IMAGE_PATH", img_path):
+            output_path = _run_main(self.SAMPLE)
+        doc = Document(str(output_path))
+        image_parts = [
+            rel.target_ref
+            for rel in doc.part.rels.values()
+            if "image" in rel.reltype
+        ]
+        self.assertGreater(len(image_parts), 0, "Bank copy image not embedded")
+
+    def test_bank_copy_heading_present(self) -> None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        img_path = tmp_dir / "bank.png"
+        _create_tiny_png(img_path)
+        with patch.object(gmr, "BANK_COPY_IMAGE_PATH", img_path):
+            output_path = _run_main(self.SAMPLE)
+        doc = Document(str(output_path))
+        all_text = "\n".join(p.text for p in doc.paragraphs)
+        self.assertIn("통장 사본", all_text)
+
+    def test_missing_bank_copy_warns_no_crash(self) -> None:
+        missing = Path("/nonexistent/bank_copy.png")
+        captured = io.StringIO()
+        with patch.object(gmr, "BANK_COPY_IMAGE_PATH", missing):
+            with patch("sys.stderr", captured):
+                output_path = _run_main(self.SAMPLE)
+        self.assertTrue(output_path.exists())
+        self.assertIn("Warning", captured.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -60,6 +60,15 @@ DESC_CELL_INDEX = 6
 COUNT_CELL_INDEX = 14
 SUBMISSION_DATE_PARA_INDEX = 2  # 0-based within row 16 cell
 
+# Fixed club registration number, filled into the application form every month.
+REGISTRATION_NUMBER = "EKL-130401"
+REGISTRATION_ROW_INDEX = 1  # row whose label cell (c0) is 등록번호
+REGISTRATION_CELL_INDEX = 2  # value cell in that row
+
+# Bank account copy image, embedded into every report as supporting evidence.
+BANK_COPY_IMAGE_PATH = Path(__file__).parent / "templates" / "bank_account_copy.png"
+BANK_COPY_HEADING = "통장 사본 (입금계좌)"
+
 
 def set_cell_text(cell: _Cell, text: str) -> None:
     """Clear all runs in the first paragraph and set new text, preserving paragraph properties."""
@@ -130,6 +139,25 @@ def write_submission_date(table: Any, date_str: str) -> None:
         paragraph.runs[0].text = formatted
     else:
         paragraph.add_run(formatted)
+
+
+def write_registration_number(table: Any) -> None:
+    """Write the fixed club registration number into the application form."""
+    cell = table.rows[REGISTRATION_ROW_INDEX].cells[REGISTRATION_CELL_INDEX]
+    set_cell_text(cell, REGISTRATION_NUMBER)
+
+
+def write_bank_copy_page(doc: Document) -> None:
+    """Append a page with the bank account copy image. Warns and skips if missing."""
+    if not BANK_COPY_IMAGE_PATH.is_file():
+        print(f"Warning: bank copy image not found: {BANK_COPY_IMAGE_PATH}", file=sys.stderr)
+        return
+
+    doc.add_page_break()
+    heading_para = doc.add_paragraph()
+    run = heading_para.add_run(BANK_COPY_HEADING)
+    run.bold = True
+    doc.add_picture(str(BANK_COPY_IMAGE_PATH), width=Inches(4.0))
 
 
 def fetch_image(photo: dict[str, Any]) -> io.BytesIO | Path | None:
@@ -239,9 +267,12 @@ def main() -> None:
     doc = Document(str(TEMPLATE_PATH))
     table = doc.tables[0]
 
+    write_registration_number(table)
     write_activities(table, activities)
     write_total(table, data["total"])
     write_submission_date(table, data["submission_date"])
+
+    write_bank_copy_page(doc)
 
     photos = data.get("photos", [])
     if photos:
