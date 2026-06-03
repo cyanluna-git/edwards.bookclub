@@ -18,12 +18,18 @@ if [ ! -f "${LOCAL_DIR}/.env" ]; then
 fi
 source "${LOCAL_DIR}/.env"
 
+required_vars=(RAILS_MASTER_KEY SECRET_KEY_BASE ENTRA_TENANT_ID ENTRA_CLIENT_ID ENTRA_CLIENT_SECRET)
+missing=()
+for v in "${required_vars[@]}"; do
+  [ -z "${!v:-}" ] && missing+=("$v")
+done
+if [ ${#missing[@]} -gt 0 ]; then
+  echo "ERROR: missing required secrets in .env: ${missing[*]}" >&2
+  exit 1
+fi
+
 # Read server password from server.md
 SERVER_PW=$(grep "^PW=" "${LOCAL_DIR}/server.md" | cut -d= -f2)
-
-# Existing env vars (from current container)
-RAILS_MASTER_KEY="***REMOVED***"
-SECRET_KEY_BASE="***REMOVED***"
 
 run_remote() {
   sshpass -p "${SERVER_PW}" ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no "${SERVER_USER}@${SERVER_HOST}" "$1"
