@@ -26,3 +26,6 @@ storage/*.sqlite3_*
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
+
+# TLS cert/key material and secrets — keep entirely out of git
+/ops/ssl/
