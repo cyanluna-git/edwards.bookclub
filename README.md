@@ -148,7 +148,7 @@ Behavior:
 Azure redirect URI:
 
 ```text
-https://bookclub.10.82.37.79.sslip.io/auth/entra_id/callback
+https://edwards-bookclub.atlascopco.group/auth/entra_id/callback
 ```
 
 ## PBIX migration artifacts

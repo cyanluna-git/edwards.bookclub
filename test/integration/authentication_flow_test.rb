@@ -105,7 +105,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
   test "sign-in page advertises sso and can redirect to the upstream login url" do
     with_env(
       "BOOKCLUB_SSO_ENABLED" => "true",
-      "BOOKCLUB_SSO_LOGIN_URL" => "https://oqc.10.82.37.79.sslip.io/sso/bookclub",
+      "BOOKCLUB_SSO_LOGIN_URL" => "https://oqc.atlascopco.group/sso/bookclub",
       "BOOKCLUB_SSO_AUTO_REDIRECT" => "false"
     ) do
       get new_session_path
@@ -113,7 +113,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
       assert_match "Sign in with Edwards SSO", response.body
 
       get sso_session_path
-      assert_redirected_to "https://oqc.10.82.37.79.sslip.io/sso/bookclub"
+      assert_redirected_to "https://oqc.atlascopco.group/sso/bookclub"
     end
   end
 end
